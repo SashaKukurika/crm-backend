@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/user-create.dto';
 
 @Injectable()
 export class UsersService {
