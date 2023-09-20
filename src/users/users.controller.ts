@@ -14,24 +14,16 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
-  @Role(UserRole.ADMIN, UserRole.MANAGER)
+  @Role(UserRole.ADMIN)
   @UseGuards(AccessTokenGuard, RoleGuard)
   @Get()
   async getAllUsers(): Promise<User[]> {
     return this.userService.getAllUsers();
   }
-  // @Get('/orders')
-  // async getAllOrders(): Promise<any> {
-  //   return this.userService.getAllOrders();
-  // }
   @Post()
   async createUser(@Body() createUserDto: CreateUserDto): Promise<any> {
     return await this.userService.createUser(createUserDto);
   }
-  // @Get(':userId')
-  // async getUserById(@Param('userId') userId: string): Promise<any> {
-  //   return this.userService.getUserById(userId);
-  // }
   @Post('create/admin')
   async createAdmin() {
     return await this.userService.createAdmin();

@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from '../auth/auth.module';
-import { Orders } from './entitys/orders.entity';
 import { User } from './entitys/user.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
@@ -12,7 +11,7 @@ import { UsersService } from './users.service';
   // imports some "AnimalsService" service to use his in this module, put all that we use inside module
   providers: [UsersService],
   // imports some module to use his in this module
-  imports: [TypeOrmModule.forFeature([User, Orders]), AuthModule],
+  imports: [TypeOrmModule.forFeature([User]), AuthModule],
   exports: [],
 })
 export class UsersModule {}
