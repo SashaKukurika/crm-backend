@@ -1,6 +1,10 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { Role } from '../auth/decorators/role';
+import { UserRole } from '../auth/enums/user-role.enum';
+import { AccessTokenGuard } from '../auth/guards/access-token.guard';
+import { RoleGuard } from '../auth/guards/authorization.guard';
 import { CreateUserDto } from './dto/user-create.dto';
 import { User } from './entitys/user.entity';
 import { UsersService } from './users.service';
@@ -10,14 +14,16 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
+  @Role(UserRole.ADMIN, UserRole.MANAGER)
+  @UseGuards(AccessTokenGuard, RoleGuard)
   @Get()
   async getAllUsers(): Promise<User[]> {
     return this.userService.getAllUsers();
   }
-  @Get('/orders')
-  async getAllOrders(): Promise<any> {
-    return this.userService.getAllOrders();
-  }
+  // @Get('/orders')
+  // async getAllOrders(): Promise<any> {
+  //   return this.userService.getAllOrders();
+  // }
   @Post()
   async createUser(@Body() createUserDto: CreateUserDto): Promise<any> {
     return await this.userService.createUser(createUserDto);
@@ -26,4 +32,8 @@ export class UsersController {
   // async getUserById(@Param('userId') userId: string): Promise<any> {
   //   return this.userService.getUserById(userId);
   // }
+  @Post('create/admin')
+  async createAdmin() {
+    return await this.userService.createAdmin();
+  }
 }
