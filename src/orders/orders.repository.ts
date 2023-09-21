@@ -161,4 +161,46 @@ export class OrdersRepository extends Repository<Orders> {
       totalOrders,
     };
   }
+
+  async getOrdersStatistics() {
+    const queryBuilder = await this.createQueryBuilder('orders');
+    // .select(['COUNT(orders.status) as total', 'orders.status as status'])
+    // .groupBy('orders.status')
+    // .getRawMany();
+    const total = await queryBuilder.getCount();
+    const inWork = await queryBuilder
+      .where('orders.status = :status', {
+        status: 'In work',
+      })
+      .getCount();
+    const aggre = await queryBuilder
+      .where('orders.status = :status', {
+        status: 'Aggre',
+      })
+      .getCount();
+    const disaggre = await queryBuilder
+      .where('orders.status = :status', {
+        status: 'Disaggre',
+      })
+      .getCount();
+    const dubbing = await queryBuilder
+      .where('orders.status = :status', {
+        status: 'Dubbing',
+      })
+      .getCount();
+    const nullOrders = await queryBuilder
+      .where('orders.status IS NULL OR orders.status = :status', {
+        status: 'New',
+      })
+      .getCount();
+
+    return {
+      total,
+      inWork,
+      aggre,
+      disaggre,
+      dubbing,
+      nullOrders,
+    };
+  }
 }

@@ -21,8 +21,14 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('srm/api', app, document);
 
+  app.enableCors({
+    origin: process.env.ERONT_CORS_URL,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
   app.useGlobalPipes(new ValidationPipe());
 
-  await app.listen(3000);
+  await app.listen(5000);
 }
 bootstrap();

@@ -12,10 +12,16 @@ import { OrdersService } from './orders.service';
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
-  @Role(UserRole.ADMIN, UserRole.MANAGER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  // @Role(UserRole.ADMIN, UserRole.MANAGER)
+  // @UseGuards(AccessTokenGuard, RoleGuard)
   @Get()
   async getOrdersWithPagination(@Query() query: OrderQueryDto) {
     return await this.ordersService.getOrdersWithPagination(query);
+  }
+  @Role(UserRole.ADMIN, UserRole.MANAGER)
+  @UseGuards(AccessTokenGuard, RoleGuard)
+  @Get('/statistics')
+  async getOrdersStatistics() {
+    return await this.ordersService.getOrdersStatistics();
   }
 }

@@ -79,4 +79,9 @@ export class OrderQueryDto {
   @IsString()
   @IsOptional()
   group: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  manager: string;
 }

@@ -8,6 +8,9 @@ export class OrdersService {
   constructor(private readonly ordersRepository: OrdersRepository) {}
 
   async getOrdersWithPagination(query: OrderQueryDto) {
-    return this.ordersRepository.getOrdersWithPagination(query);
+    return await this.ordersRepository.getOrdersWithPagination(query);
+  }
+  async getOrdersStatistics() {
+    return await this.ordersRepository.getOrdersStatistics();
   }
 }
