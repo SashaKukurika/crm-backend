@@ -147,6 +147,20 @@ export class OrdersRepository extends Repository<Orders> {
         some10: `%${query.group}%`,
       });
 
+    // for (const queryKey in query) {
+    //   if (
+    //     queryKey !== 'page' &&
+    //     queryKey !== 'field' &&
+    //     queryKey !== 'fieldOrder' &&
+    //     // todo add group
+    //     queryKey !== 'group'
+    //   ) {
+    //     queryBuilder.andWhere(`orders.${queryKey} LIKE :some11`, {
+    //       some11: `%${query[queryKey]}%`,
+    //     });
+    //   }
+    // }
+
     const totalOrders = await queryBuilder.getCount();
 
     queryBuilder.offset((page - 1) * limit).limit(limit);
