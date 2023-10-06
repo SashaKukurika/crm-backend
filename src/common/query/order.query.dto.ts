@@ -17,13 +17,7 @@ export class OrderQueryDto {
   @IsString()
   @IsOptional()
   @IsEnum(OrderFieldEnum)
-  field: OrderFieldEnum;
-
-  @ApiProperty()
-  @IsString()
-  @IsOptional()
-  @IsEnum(['ASC', 'DESC'])
-  fieldOrder: 'ASC' | 'DESC';
+  order: OrderFieldEnum;
 
   @ApiProperty()
   @IsString()
@@ -84,4 +78,14 @@ export class OrderQueryDto {
   @IsString()
   @IsOptional()
   manager: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  start_date: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  end_date: string;
 }

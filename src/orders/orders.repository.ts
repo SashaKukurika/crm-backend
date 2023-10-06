@@ -12,90 +12,22 @@ export class OrdersRepository extends Repository<Orders> {
   async getOrdersWithPagination(query: OrderQueryDto) {
     const page = +query.page || 1;
     const limit = 25;
-    query.fieldOrder = query.fieldOrder || 'ASC';
 
-    const queryBuilder = await this.createQueryBuilder('orders');
-    if (query.field)
-      await queryBuilder.orderBy(`orders.${query.field}`, query.fieldOrder);
-    // switch (query.field) {
-    //   case OrderFieldEnum.NAME:
-    //     queryBuilder.orderBy(`orders.${OrderFieldEnum.NAME}`, query.fieldOrder);
-    //     break;
-    //   case OrderFieldEnum.SURNAME:
-    //     queryBuilder.orderBy(
-    //       `orders.${OrderFieldEnum.SURNAME}`,
-    //       query.fieldOrder,
-    //     );
-    //     break;
-    //   case OrderFieldEnum.EMAIL:
-    //     queryBuilder.orderBy(
-    //       `orders.${OrderFieldEnum.EMAIL}`,
-    //       query.fieldOrder,
-    //     );
-    //     break;
-    //   case OrderFieldEnum.PHONE:
-    //     queryBuilder.orderBy(
-    //       `orders.${OrderFieldEnum.PHONE}`,
-    //       query.fieldOrder,
-    //     );
-    //     break;
-    //   case OrderFieldEnum.AGE:
-    //     queryBuilder.orderBy(`orders.${OrderFieldEnum.AGE}`, query.fieldOrder);
-    //     break;
-    //   case OrderFieldEnum.COURSE:
-    //     queryBuilder.orderBy(
-    //       `orders.${OrderFieldEnum.COURSE}`,
-    //       query.fieldOrder,
-    //     );
-    //     break;
-    //   case OrderFieldEnum.COURSE_FORMAT:
-    //     queryBuilder.orderBy(
-    //       `orders.${OrderFieldEnum.COURSE_FORMAT}`,
-    //       query.fieldOrder,
-    //     );
-    //     break;
-    //   case OrderFieldEnum.COURSE_TYPE:
-    //     queryBuilder.orderBy(
-    //       `orders.${OrderFieldEnum.COURSE_TYPE}`,
-    //       query.fieldOrder,
-    //     );
-    //     break;
-    //   case OrderFieldEnum.STATUS:
-    //     queryBuilder.orderBy(
-    //       `orders.${OrderFieldEnum.STATUS}`,
-    //       query.fieldOrder,
-    //     );
-    //     break;
-    //   case OrderFieldEnum.SUM:
-    //     queryBuilder.orderBy(`orders.${OrderFieldEnum.SUM}`, query.fieldOrder);
-    //     break;
-    //   case OrderFieldEnum.ALREADYPAID:
-    //     queryBuilder.orderBy(
-    //       `orders.${OrderFieldEnum.ALREADYPAID}`,
-    //       query.fieldOrder,
-    //     );
-    //     break;
-    //   case OrderFieldEnum.GROUP:
-    //     queryBuilder.orderBy(
-    //       `orders.${OrderFieldEnum.GROUP}`,
-    //       query.fieldOrder,
-    //     );
-    //     break;
-    //   case OrderFieldEnum.CREATED_AT:
-    //     queryBuilder.orderBy(
-    //       `orders.${OrderFieldEnum.CREATED_AT}`,
-    //       query.fieldOrder,
-    //     );
-    //     break;
-    //   case OrderFieldEnum.MANAGER:
-    //     queryBuilder.orderBy(
-    //       `orders.${OrderFieldEnum.MANAGER}`,
-    //       query.fieldOrder,
-    //     );
-    //     break;
-    //   default:
-    //     queryBuilder.orderBy('orders.id', 'DESC');
-    // }
+    const queryBuilder = await this.createQueryBuilder('orders').orderBy(
+      'orders.id',
+      'DESC',
+    );
+
+    if (query.order) {
+      if (query.order.startsWith('-')) {
+        await queryBuilder.orderBy(
+          `orders.${query.order.substring(1)}`,
+          'DESC',
+        );
+      } else {
+        await queryBuilder.orderBy(`orders.${query.order}`, 'ASC');
+      }
+    }
 
     if (query.name)
       await queryBuilder.andWhere(`orders.name LIKE :some`, {
@@ -147,32 +79,25 @@ export class OrdersRepository extends Repository<Orders> {
         some10: `%${query.group}%`,
       });
 
-    // for (const queryKey in query) {
-    //   if (
-    //     queryKey !== 'page' &&
-    //     queryKey !== 'field' &&
-    //     queryKey !== 'fieldOrder' &&
-    //     // todo add group
-    //     queryKey !== 'group'
-    //   ) {
-    //     queryBuilder.andWhere(`orders.${queryKey} LIKE :some11`, {
-    //       some11: `%${query[queryKey]}%`,
-    //     });
-    //   }
-    // }
+    if (query.start_date)
+      await queryBuilder.andWhere(`orders.created_at > :targetDate`, {
+        targetDate: query.start_date,
+      });
+
+    if (query.end_date)
+      await queryBuilder.andWhere(`orders.created_at < :targetDate2`, {
+        targetDate2: query.end_date,
+      });
 
     const totalOrders = await queryBuilder.getCount();
 
     queryBuilder.offset((page - 1) * limit).limit(limit);
 
-    const totalPage = Math.ceil(totalOrders / limit);
+    const pageCount = Math.ceil(totalOrders / limit);
 
     return {
-      data: await queryBuilder.getMany(),
-      page,
-      totalPage,
-      halfOfPages: Math.ceil(totalPage / 2),
-      totalOrders,
+      orders: await queryBuilder.getMany(),
+      pageCount,
     };
   }
 
@@ -187,14 +112,14 @@ export class OrdersRepository extends Repository<Orders> {
         status: 'In work',
       })
       .getCount();
-    const aggre = await queryBuilder
+    const agree = await queryBuilder
       .where('orders.status = :status', {
-        status: 'Aggre',
+        status: 'Agree',
       })
       .getCount();
-    const disaggre = await queryBuilder
+    const disagree = await queryBuilder
       .where('orders.status = :status', {
-        status: 'Disaggre',
+        status: 'Disagree',
       })
       .getCount();
     const dubbing = await queryBuilder
@@ -211,8 +136,8 @@ export class OrdersRepository extends Repository<Orders> {
     return {
       total,
       inWork,
-      aggre,
-      disaggre,
+      agree,
+      disagree,
       dubbing,
       nullOrders,
     };
