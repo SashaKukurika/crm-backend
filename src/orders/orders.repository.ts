@@ -13,10 +13,9 @@ export class OrdersRepository extends Repository<Orders> {
     const page = +query.page || 1;
     const limit = 25;
 
-    const queryBuilder = await this.createQueryBuilder('orders').orderBy(
-      'orders.id',
-      'DESC',
-    );
+    const queryBuilder = await this.createQueryBuilder('orders')
+      .leftJoinAndSelect('orders.group', 'group')
+      .orderBy('orders.id', 'DESC');
 
     if (query.order) {
       if (query.order.startsWith('-')) {
@@ -76,7 +75,7 @@ export class OrdersRepository extends Repository<Orders> {
 
     if (query.group)
       await queryBuilder.andWhere(`orders.group LIKE :some10`, {
-        some10: `%${query.group}%`,
+        some10: query.group,
       });
 
     if (query.start_date)

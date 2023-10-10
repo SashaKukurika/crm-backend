@@ -2,8 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
+import { Groups } from '../../group/entitys/groups.entity';
 
 @Entity()
 export class Orders {
@@ -56,4 +59,7 @@ export class Orders {
 
   @Column({ type: 'varchar', length: 15, nullable: true })
   status: string;
+
+  @ManyToOne(() => Groups, (group) => group.orders)
+  group: Groups;
 }
