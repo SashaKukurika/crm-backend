@@ -7,7 +7,7 @@ export class Groups {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, unique: true })
   name: string;
 
   @OneToMany(() => Orders, (order) => order.group)

@@ -74,8 +74,8 @@ export class OrdersRepository extends Repository<Orders> {
       });
 
     if (query.group)
-      await queryBuilder.andWhere(`orders.group LIKE :some10`, {
-        some10: query.group,
+      await queryBuilder.andWhere(`group.name = :groupName`, {
+        groupName: query.group,
       });
 
     if (query.start_date)
