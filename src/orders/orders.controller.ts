@@ -1,7 +1,8 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { OrderQueryDto } from '../common/query/order.query.dto';
+import { OrderUpdateDto } from './dto/order-update.dto';
 import { OrdersService } from './orders.service';
 
 @ApiTags('Orders')
@@ -19,6 +20,14 @@ export class OrdersController {
   @Get('/statistics')
   async getOrdersStatistics() {
     return await this.ordersService.getOrdersStatistics();
+  }
+
+  @Patch(':orderId')
+  async updateById(
+    @Body() orderUpdateDto: OrderUpdateDto,
+    @Param('orderId') orderId: string,
+  ): Promise<void> {
+    return await this.ordersService.updateById(orderUpdateDto, orderId);
   }
   // todo add getExel endpoint '/exel'
 }

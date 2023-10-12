@@ -1,12 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 
 import { OrderQueryDto } from '../common/query/order.query.dto';
+import { Groups } from '../group/entitys/groups.entity';
+import { OrderUpdateDto } from './dto/order-update.dto';
 import { Orders } from './entitys/orders.entity';
 
 @Injectable()
 export class OrdersRepository extends Repository<Orders> {
-  constructor(private readonly dataSource: DataSource) {
+  constructor(
+    private readonly dataSource: DataSource,
+    @InjectRepository(Groups)
+    private readonly groupsRepository: Repository<Groups>,
+  ) {
     super(Orders, dataSource.manager);
   }
   async getOrdersWithPagination(query: OrderQueryDto) {
@@ -140,5 +147,27 @@ export class OrdersRepository extends Repository<Orders> {
       dubbing,
       nullOrders,
     };
+  }
+
+  async updateById(orderUpdateDto: OrderUpdateDto, id: number): Promise<void> {
+    const order = await this.findOneBy({ id });
+    const group = await this.groupsRepository.findOneBy({
+      name: orderUpdateDto.group,
+    });
+
+    if (!order) {
+      throw new HttpException(
+        `Order with id=${id} do not exist`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (!group) {
+      throw new HttpException(
+        `Group with name=${orderUpdateDto.group} do not exist`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.update({ id }, { ...orderUpdateDto, group });
   }
 }
