@@ -1,6 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { UserRole } from '../../auth/enums/user-role.enum';
+import { Comment } from '../../orders/entitys/comment.entity';
 
 @Entity()
 export class User {
@@ -25,4 +26,7 @@ export class User {
 
   @Column({ type: 'enum', enum: UserRole })
   role: UserRole;
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[];
 }

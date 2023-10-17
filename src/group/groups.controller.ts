@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { CreateGroupsDto } from './dto/groups-create.dto';
+import { GroupsCreateDto } from './dto/groups-create.dto';
 import { Groups } from './entitys/groups.entity';
 import { GroupsService } from './groups.service';
 
@@ -15,7 +15,7 @@ export class GroupsController {
     return this.groupsService.getAllGroups();
   }
   @Post()
-  async createGroups(@Body() createGroupsDto: CreateGroupsDto): Promise<any> {
-    return await this.groupsService.createGroups(createGroupsDto);
+  async createGroups(@Body() groupsCreateDto: GroupsCreateDto): Promise<void> {
+    return await this.groupsService.createGroups(groupsCreateDto);
   }
 }

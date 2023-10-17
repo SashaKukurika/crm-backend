@@ -4,7 +4,10 @@ import { DataSource, Repository } from 'typeorm';
 
 import { OrderQueryDto } from '../common/query/order.query.dto';
 import { Groups } from '../group/entitys/groups.entity';
+import { User } from '../users/entitys/user.entity';
+import { CommentsCreateDto } from './dto/comments-create.dto';
 import { OrderUpdateDto } from './dto/order-update.dto';
+import { Comment } from './entitys/comment.entity';
 import { Orders } from './entitys/orders.entity';
 
 @Injectable()
@@ -13,6 +16,10 @@ export class OrdersRepository extends Repository<Orders> {
     private readonly dataSource: DataSource,
     @InjectRepository(Groups)
     private readonly groupsRepository: Repository<Groups>,
+    @InjectRepository(Comment)
+    private readonly commentsRepository: Repository<Comment>,
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
   ) {
     super(Orders, dataSource.manager);
   }
@@ -22,6 +29,7 @@ export class OrdersRepository extends Repository<Orders> {
 
     const queryBuilder = await this.createQueryBuilder('orders')
       .leftJoinAndSelect('orders.group', 'group')
+      .leftJoinAndSelect('orders.comments', 'comments')
       .orderBy('orders.id', 'DESC');
 
     if (query.order) {
@@ -169,5 +177,29 @@ export class OrdersRepository extends Repository<Orders> {
     }
 
     await this.update({ id }, { ...orderUpdateDto, group });
+  }
+
+  async addComment(id: number, data: CommentsCreateDto) {
+    const { text, userId } = data;
+    const user = await this.usersRepository.findOneBy({ id: +userId });
+    if (!user) {
+      throw new HttpException(
+        `User with id=${userId} not exist`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const order = await this.findOneBy({ id });
+    if (!order) {
+      throw new HttpException(
+        `Order with id=${id} not exist`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const comment = await this.commentsRepository.create({
+      text,
+      user: { ...user },
+      order: { ...order },
+    });
+    await this.commentsRepository.save(comment);
   }
 }

@@ -15,9 +15,9 @@ export class GroupsService {
     return this.groupsRepository.find();
   }
 
-  async createGroups(createGroupsDto): Promise<any> {
-    const group = this.groupsRepository.create({ ...createGroupsDto });
+  async createGroups(groupsCreateDto): Promise<void> {
+    // todo check group for unique
+    const group = this.groupsRepository.create({ ...groupsCreateDto });
     await this.groupsRepository.save(group);
-    return group;
   }
 }

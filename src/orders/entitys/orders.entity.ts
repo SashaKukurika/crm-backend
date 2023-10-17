@@ -3,10 +3,12 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import { Groups } from '../../group/entitys/groups.entity';
+import { Comment } from './comment.entity';
 
 @Entity()
 export class Orders {
@@ -62,4 +64,7 @@ export class Orders {
 
   @ManyToOne(() => Groups, (group) => group.orders)
   group: Groups;
+
+  @OneToMany(() => Comment, (comment) => comment.order)
+  comments: Comment[];
 }

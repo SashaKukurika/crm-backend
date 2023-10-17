@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { OrderQueryDto } from '../common/query/order.query.dto';
+import { CommentsCreateDto } from './dto/comments-create.dto';
 import { OrderUpdateDto } from './dto/order-update.dto';
 import { OrdersRepository } from './orders.repository';
 
@@ -20,5 +21,9 @@ export class OrdersService {
     orderId: string,
   ): Promise<void> {
     return await this.ordersRepository.updateById(orderUpdateDto, +orderId);
+  }
+
+  async addComment(orderId: string, data: CommentsCreateDto) {
+    return await this.ordersRepository.addComment(+orderId, data);
   }
 }
