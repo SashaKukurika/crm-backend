@@ -28,9 +28,20 @@ export class OrdersRepository extends Repository<Orders> {
     const limit = 25;
 
     const queryBuilder = await this.createQueryBuilder('orders')
-      .leftJoinAndSelect('orders.group', 'group')
       .leftJoinAndSelect('orders.comments', 'comments')
-      .orderBy('orders.id', 'DESC');
+      .leftJoinAndSelect('orders.group', 'group')
+      .leftJoinAndSelect('comments.user', 'user')
+      .orderBy('orders.id', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .addOrderBy('comments.created_at', 'DESC');
+
+    // const orders2 = await this.find({
+    //   relations: ['group', 'comments'],
+    //   skip: (page - 1) * limit,
+    //   take: limit,
+    //   order: { id: 'DESC' },
+    // });
 
     if (query.order) {
       if (query.order.startsWith('-')) {
@@ -104,13 +115,17 @@ export class OrdersRepository extends Repository<Orders> {
       });
 
     const totalOrders = await queryBuilder.getCount();
-
-    queryBuilder.offset((page - 1) * limit).limit(limit);
+    // queryBuilder.skip((page - 1) * limit).take(limit);
 
     const pageCount = Math.ceil(totalOrders / limit);
 
+    // queryBuilder
+    //   .leftJoinAndSelect('orders.comments', 'comments')
+    //   .addOrderBy('comments.created_at', 'DESC');
+
     return {
       orders: await queryBuilder.getMany(),
+      // orders: orders2,
       pageCount,
     };
   }
