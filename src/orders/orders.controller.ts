@@ -35,7 +35,7 @@ export class OrdersController {
   async updateById(
     @Body() orderUpdateDto: OrderUpdateDto,
     @Param('orderId') orderId: string,
-  ): Promise<void> {
+  ): Promise<any> {
     return await this.ordersService.updateById(orderUpdateDto, orderId);
   }
 

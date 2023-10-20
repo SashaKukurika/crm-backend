@@ -75,33 +75,33 @@ export class OrdersRepository extends Repository<Orders> {
       });
 
     if (query.age)
-      await queryBuilder.andWhere(`orders.age LIKE :some5`, {
-        some5: `%${query.age}%`,
+      await queryBuilder.andWhere(`orders.age = :age`, {
+        age: query.age,
       });
 
     if (query.course)
-      await queryBuilder.andWhere(`orders.course LIKE :some6`, {
-        some6: `%${query.course}%`,
+      await queryBuilder.andWhere(`orders.course = :course`, {
+        course: query.course,
       });
 
     if (query.course_format)
-      await queryBuilder.andWhere(`orders.course_format LIKE :some7`, {
-        some7: `%${query.course_format}%`,
+      await queryBuilder.andWhere(`orders.course_format = :course_format`, {
+        course_format: query.course_format,
       });
 
     if (query.course_type)
-      await queryBuilder.andWhere(`orders.course_type LIKE :some8`, {
-        some8: `%${query.course_type}%`,
+      await queryBuilder.andWhere(`orders.course_type = :course_type`, {
+        course_type: query.course_type,
       });
 
     if (query.status)
-      await queryBuilder.andWhere(`orders.status LIKE :some9`, {
-        some9: `%${query.status}%`,
+      await queryBuilder.andWhere(`orders.status = :status`, {
+        status: query.status,
       });
 
     if (query.group)
-      await queryBuilder.andWhere(`group.name = :groupName`, {
-        groupName: query.group,
+      await queryBuilder.andWhere(`group.name = :group`, {
+        group: query.group,
       });
 
     if (query.start_date)
@@ -114,10 +114,8 @@ export class OrdersRepository extends Repository<Orders> {
         targetDate2: query.end_date,
       });
 
-    const totalOrders = await queryBuilder.getCount();
+    const totalCount = await queryBuilder.getCount();
     // queryBuilder.skip((page - 1) * limit).take(limit);
-
-    const pageCount = Math.ceil(totalOrders / limit);
 
     // queryBuilder
     //   .leftJoinAndSelect('orders.comments', 'comments')
@@ -126,7 +124,7 @@ export class OrdersRepository extends Repository<Orders> {
     return {
       orders: await queryBuilder.getMany(),
       // orders: orders2,
-      pageCount,
+      totalCount,
     };
   }
 
@@ -172,26 +170,29 @@ export class OrdersRepository extends Repository<Orders> {
     };
   }
 
-  async updateById(orderUpdateDto: OrderUpdateDto, id: number): Promise<void> {
+  async updateById(
+    orderUpdateDto: OrderUpdateDto,
+    id: number,
+  ): Promise<Orders> {
     const order = await this.findOneBy({ id });
-    const group = await this.groupsRepository.findOneBy({
-      name: orderUpdateDto.group,
-    });
-
     if (!order) {
       throw new HttpException(
         `Order with id=${id} do not exist`,
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    const group = await this.groupsRepository.findOneBy({
+      name: orderUpdateDto.group,
+    });
     if (!group) {
       throw new HttpException(
         `Group with name=${orderUpdateDto.group} do not exist`,
         HttpStatus.BAD_REQUEST,
       );
     }
-
-    await this.update({ id }, { ...orderUpdateDto, group });
+    Object.assign(order, { ...orderUpdateDto, group });
+    return await this.save(order);
   }
 
   async addComment(id: number, data: CommentsCreateDto) {
@@ -215,6 +216,8 @@ export class OrdersRepository extends Repository<Orders> {
       user: { ...user },
       order: { ...order },
     });
-    await this.commentsRepository.save(comment);
+    const newComment = await this.commentsRepository.save(comment);
+    // todo norm comment
+    return await this.findOneBy({ group: { id: newComment.id } });
   }
 }

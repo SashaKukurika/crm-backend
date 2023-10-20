@@ -19,7 +19,7 @@ export class OrdersService {
   async updateById(
     orderUpdateDto: OrderUpdateDto,
     orderId: string,
-  ): Promise<void> {
+  ): Promise<any> {
     return await this.ordersRepository.updateById(orderUpdateDto, +orderId);
   }
 
