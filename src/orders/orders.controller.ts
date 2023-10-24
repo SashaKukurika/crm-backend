@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Query,
+  Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -29,6 +30,11 @@ export class OrdersController {
   @Get('/statistics')
   async getOrdersStatistics() {
     return await this.ordersService.getOrdersStatistics();
+  }
+
+  @Get('/exel')
+  async getExel(@Body() params: any, @Res() res: Response) {
+    return await this.ordersService.getExel(params, res);
   }
 
   @Patch(':orderId')

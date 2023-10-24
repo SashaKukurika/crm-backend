@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 
+import { StatusEnum } from '../common/enums/status.enum';
 import { OrderQueryDto } from '../common/query/order.query.dto';
 import { Groups } from '../group/entitys/groups.entity';
 import { User } from '../users/entitys/user.entity';
@@ -197,7 +198,7 @@ export class OrdersRepository extends Repository<Orders> {
 
   async addComment(id: number, data: CommentsCreateDto) {
     const { text, userId } = data;
-    const user = await this.usersRepository.findOneBy({ id: +userId });
+    const user = await this.usersRepository.findOneBy({ id: userId });
     if (!user) {
       throw new HttpException(
         `User with id=${userId} not exist`,
@@ -216,8 +217,16 @@ export class OrdersRepository extends Repository<Orders> {
       user: { ...user },
       order: { ...order },
     });
+
+    await this.update(
+      { id },
+      {
+        status: order.status ? order.status : StatusEnum.IN_WORK,
+      },
+    );
     const newComment = await this.commentsRepository.save(comment);
-    // todo norm comment
-    return await this.findOneBy({ group: { id: newComment.id } });
+    delete newComment.order;
+
+    return { ...newComment, orderId: id };
   }
 }

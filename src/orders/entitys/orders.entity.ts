@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+import { StatusEnum } from '../../common/enums/status.enum';
 import { Groups } from '../../group/entitys/groups.entity';
 import { Comment } from './comment.entity';
 
@@ -60,7 +61,7 @@ export class Orders {
   msg: string;
 
   @Column({ type: 'varchar', length: 15, nullable: true })
-  status: string;
+  status: StatusEnum;
 
   @ManyToOne(() => Groups, (group) => group.orders)
   group: Groups;
