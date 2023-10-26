@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   Param,
   Patch,
   Post,
@@ -9,6 +10,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
 
 import { OrderQueryDto } from '../common/query/order.query.dto';
 import { CommentsCreateDto } from './dto/comments-create.dto';
@@ -32,9 +34,25 @@ export class OrdersController {
     return await this.ordersService.getOrdersStatistics();
   }
 
-  @Get('/exel')
-  async getExel(@Body() params: any, @Res() res: Response) {
-    return await this.ordersService.getExel(params, res);
+  @Get('/excel')
+  @Header(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  )
+  // @Header('Content-Disposition', 'attachment; filename=exported-data.xlsx')
+  async getExel(@Body() params: any, @Res() res: Response): Promise<void> {
+    const book = await this.ordersService.getExel(params);
+    await book.xlsx.write(res).then(() => {
+      res.status(200).end();
+    });
+    // res.setHeader(
+    //   'Content-Disposition',
+    //   'attachment; filename=exported-data.xlsx',
+    // );
+    // const file = createReadStream(File);
+    // return new StreamableFile(file);
+    // res.end(File);
+    // res.download(`${File}`);
   }
 
   @Patch(':orderId')
