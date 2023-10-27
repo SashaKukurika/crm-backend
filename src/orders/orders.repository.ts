@@ -1,8 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 
 import { StatusEnum } from '../common/enums/status.enum';
+import { PaginatedOrders } from '../common/pagination/response';
 import { OrderQueryDto } from '../common/query/order.query.dto';
 import { Groups } from '../group/entitys/groups.entity';
 import { User } from '../users/entitys/user.entity';
@@ -10,6 +11,7 @@ import { CommentsCreateDto } from './dto/comments-create.dto';
 import { OrderUpdateDto } from './dto/order-update.dto';
 import { Comment } from './entitys/comment.entity';
 import { Orders } from './entitys/orders.entity';
+import { IOrderStatistic } from './inretfaces/order-statistic.interface';
 
 @Injectable()
 export class OrdersRepository extends Repository<Orders> {
@@ -24,150 +26,48 @@ export class OrdersRepository extends Repository<Orders> {
   ) {
     super(Orders, dataSource.manager);
   }
-  async getOrdersWithPagination(query: OrderQueryDto) {
+  async getOrdersWithPagination(
+    query: OrderQueryDto,
+  ): Promise<PaginatedOrders> {
     const page = +query.page || 1;
     const limit = 25;
 
-    const queryBuilder = await this.createQueryBuilder('orders')
-      .leftJoinAndSelect('orders.comments', 'comments')
-      .leftJoinAndSelect('orders.group', 'group')
-      .leftJoinAndSelect('comments.user', 'user')
-      .orderBy('orders.id', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit)
-      .addOrderBy('comments.created_at', 'DESC');
+    const searchedAndSortedOrders = await this.searchAndSortOrders(query);
 
-    // const orders2 = await this.find({
-    //   relations: ['group', 'comments'],
-    //   skip: (page - 1) * limit,
-    //   take: limit,
-    //   order: { id: 'DESC' },
-    // });
+    searchedAndSortedOrders.skip((page - 1) * limit).take(limit);
 
-    if (query.order) {
-      if (query.order.startsWith('-')) {
-        await queryBuilder.orderBy(
-          `orders.${query.order.substring(1)}`,
-          'DESC',
-        );
-      } else {
-        await queryBuilder.orderBy(`orders.${query.order}`, 'ASC');
-      }
-    }
-
-    if (query.name)
-      await queryBuilder.andWhere(`orders.name LIKE :some`, {
-        some: `%${query.name}%`,
-      });
-
-    if (query.surname)
-      await queryBuilder.andWhere(`orders.surname LIKE :some2`, {
-        some2: `%${query.surname}%`,
-      });
-
-    if (query.email)
-      await queryBuilder.andWhere(`orders.email LIKE :some3`, {
-        some3: `%${query.email}%`,
-      });
-
-    if (query.phone)
-      await queryBuilder.andWhere(`orders.phone LIKE :some4`, {
-        some4: `%${query.phone}%`,
-      });
-
-    if (query.age)
-      await queryBuilder.andWhere(`orders.age = :age`, {
-        age: query.age,
-      });
-
-    if (query.course)
-      await queryBuilder.andWhere(`orders.course = :course`, {
-        course: query.course,
-      });
-
-    if (query.course_format)
-      await queryBuilder.andWhere(`orders.course_format = :course_format`, {
-        course_format: query.course_format,
-      });
-
-    if (query.course_type)
-      await queryBuilder.andWhere(`orders.course_type = :course_type`, {
-        course_type: query.course_type,
-      });
-
-    if (query.status)
-      await queryBuilder.andWhere(`orders.status = :status`, {
-        status: query.status,
-      });
-
-    if (query.group)
-      await queryBuilder.andWhere(`group.name = :group`, {
-        group: query.group,
-      });
-
-    if (query.start_date)
-      await queryBuilder.andWhere(`orders.created_at > :targetDate`, {
-        targetDate: query.start_date,
-      });
-
-    if (query.end_date)
-      await queryBuilder.andWhere(`orders.created_at < :targetDate2`, {
-        targetDate2: query.end_date,
-      });
-
-    const totalCount = await queryBuilder.getCount();
-    // queryBuilder.skip((page - 1) * limit).take(limit);
-
-    // queryBuilder
-    //   .leftJoinAndSelect('orders.comments', 'comments')
-    //   .addOrderBy('comments.created_at', 'DESC');
+    const totalCount = await searchedAndSortedOrders.getCount();
 
     return {
-      orders: await queryBuilder.getMany(),
-      // orders: orders2,
+      orders: await searchedAndSortedOrders.getMany(),
       totalCount,
     };
   }
 
-  async getOrdersStatistics() {
+  async getOrdersStatistics(): Promise<IOrderStatistic> {
     const queryBuilder = await this.createQueryBuilder('orders');
-    // .select(['COUNT(orders.status) as total', 'orders.status as status'])
-    // .groupBy('orders.status')
-    // .getRawMany();
+
     const total = await queryBuilder.getCount();
-    const inWork = await queryBuilder
-      .where('orders.status = :status', {
-        status: 'In work',
-      })
-      .getCount();
-    const agree = await queryBuilder
-      .where('orders.status = :status', {
-        status: 'Agree',
-      })
-      .getCount();
-    const disagree = await queryBuilder
-      .where('orders.status = :status', {
-        status: 'Disagree',
-      })
-      .getCount();
-    const dubbing = await queryBuilder
-      .where('orders.status = :status', {
-        status: 'Dubbing',
-      })
-      .getCount();
-    const nullOrders = await queryBuilder
-      .where('orders.status IS NULL OR orders.status = :status', {
-        status: 'New',
-      })
-      .getCount();
+    // групуємо по полю status та отримуємо їх кількість
+    const statuses = await queryBuilder
+      .select('COUNT(*)', 'count')
+      .addSelect('orders.status', 'status')
+      .groupBy('orders.status')
+      .getRawMany();
+
+    // робимо значення поля count числом
+    statuses.forEach((value) => (value.count = Number(value.count)));
+    // знаходимо де не вказаний статус і де статус = 'New'
+    const nullStatus = statuses.find((value) => value.status === null);
+    const newStatus = statuses.find((value) => value.status === StatusEnum.NEW);
+
+    // якщо обидва є то додаємо їх значення і записуємо в newStatus
+    if (nullStatus && newStatus)
+      newStatus.count = nullStatus.count + newStatus.count;
 
     return {
       total,
-      inWork,
-      agree,
-      disagree,
-      dubbing,
-      nullOrders,
+      statuses: statuses.filter((value) => value.status !== null),
     };
   }
 
@@ -228,5 +128,103 @@ export class OrdersRepository extends Repository<Orders> {
     delete newComment.order;
 
     return { ...newComment, orderId: id };
+  }
+
+  async searchAndSortOrders(
+    query: OrderQueryDto,
+  ): Promise<SelectQueryBuilder<Orders>> {
+    const {
+      name,
+      order,
+      group,
+      surname,
+      course_type,
+      course,
+      course_format,
+      age,
+      status,
+      start_date,
+      end_date,
+      phone,
+      manager,
+      email,
+    } = query;
+
+    const queryBuilder = await this.createQueryBuilder('orders')
+      .leftJoinAndSelect('orders.comments', 'comments')
+      .leftJoinAndSelect('orders.group', 'group')
+      .leftJoinAndSelect('comments.user', 'user')
+      .orderBy('orders.id', 'DESC')
+      .addOrderBy('comments.created_at', 'DESC');
+
+    if (order) {
+      if (order.startsWith('-')) {
+        await queryBuilder.orderBy(`orders.${order.substring(1)}`, 'DESC');
+      } else {
+        await queryBuilder.orderBy(`orders.${order}`, 'ASC');
+      }
+    }
+
+    if (name)
+      await queryBuilder.andWhere(`orders.name LIKE :name`, {
+        name: `%${name}%`,
+      });
+
+    if (surname)
+      await queryBuilder.andWhere(`orders.surname LIKE :surname`, {
+        surname: `%${surname}%`,
+      });
+
+    if (email)
+      await queryBuilder.andWhere(`orders.email LIKE :email`, {
+        email: `%${email}%`,
+      });
+
+    if (phone)
+      await queryBuilder.andWhere(`orders.phone LIKE :phone`, {
+        phone: `%${phone}%`,
+      });
+
+    if (age)
+      await queryBuilder.andWhere(`orders.age = :age`, {
+        age,
+      });
+
+    if (course)
+      await queryBuilder.andWhere(`orders.course = :course`, {
+        course,
+      });
+
+    if (course_format)
+      await queryBuilder.andWhere(`orders.course_format = :course_format`, {
+        course_format,
+      });
+
+    if (course_type)
+      await queryBuilder.andWhere(`orders.course_type = :course_type`, {
+        course_type,
+      });
+
+    if (status)
+      await queryBuilder.andWhere(`orders.status = :status`, {
+        status,
+      });
+
+    if (group)
+      await queryBuilder.andWhere(`group.name = :group`, {
+        group,
+      });
+    // todo add manager
+    if (start_date)
+      await queryBuilder.andWhere(`orders.created_at > :start_date`, {
+        start_date,
+      });
+
+    if (end_date)
+      await queryBuilder.andWhere(`orders.created_at < :end_date`, {
+        end_date,
+      });
+
+    return queryBuilder;
   }
 }
