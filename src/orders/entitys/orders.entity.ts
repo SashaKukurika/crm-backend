@@ -9,6 +9,7 @@ import {
 
 import { StatusEnum } from '../../common/enums/status.enum';
 import { Groups } from '../../group/entitys/groups.entity';
+import { User } from '../../users/entitys/user.entity';
 import { Comment } from './comment.entity';
 
 @Entity()
@@ -65,6 +66,9 @@ export class Orders {
 
   @ManyToOne(() => Groups, (group) => group.orders)
   group: Groups;
+
+  @ManyToOne(() => User, (user) => user.orders)
+  user: User;
 
   @OneToMany(() => Comment, (comment) => comment.order)
   comments: Comment[];

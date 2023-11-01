@@ -1,38 +1,91 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 
 import { UserRole } from '../auth/enums/user-role.enum';
+import { PaginatedUsers } from '../common/pagination/response';
+import { Orders } from '../orders/entitys/orders.entity';
+import { CreateUserDto } from './dto/user-create.dto';
 import { User } from './entitys/user.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly usersRepository: Repository<User>,
+    @InjectRepository(Orders)
+    private readonly ordersRepository: Repository<Orders>,
     private readonly configService: ConfigService,
   ) {}
-  async getAllUsers(): Promise<User[]> {
-    return this.userRepository.find();
+  async getAllUsers(query: { page: string }): Promise<PaginatedUsers> {
+    const page = +query.page || 1;
+    const take = 5;
+    const skip = (page - 1) * take;
+
+    const queryUsers = await this.usersRepository
+      .createQueryBuilder('user')
+      .where('user.role =:role', { role: UserRole.MANAGER })
+      .orderBy('user.created_at', 'DESC')
+      .skip(skip)
+      .take(take);
+
+    const users = await queryUsers.getMany();
+    const totalCount = await queryUsers.getCount();
+
+    return { users, totalCount };
   }
-  async createUser(createUserDto): Promise<any> {
-    const user = await this.userRepository.create({ ...createUserDto });
-    await this.userRepository.save(user);
-    return user;
+
+  async getUserStatistic(id: number) {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) {
+      throw new HttpException(
+        `User with id=${id} do not exist`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const userOrders = await this.ordersRepository
+      .createQueryBuilder('orders')
+      .select('COUNT(*)', 'count')
+      .addSelect('orders.status', 'status')
+      .where('orders.userId =:id', { id });
+
+    const total = await userOrders.getCount();
+    const statuses = await userOrders.groupBy('orders.status').getRawMany();
+
+    return { total, statuses };
+  }
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
+    const user = this.usersRepository.create({
+      ...createUserDto,
+      role: UserRole.MANAGER,
+    });
+    const newUser = await this.usersRepository.save(user);
+    delete newUser.password;
+    return newUser;
   }
 
   async createAdmin() {
-    const password = await bcrypt.hash(
+    const password = await this.hashPassword(
       this.configService.get<string>('ADMIN_PASSWORD'),
-      +this.configService.get<string>('BCRYPT_SALT'),
     );
-    const admin = await this.userRepository.create({
+    const admin = await this.usersRepository.create({
       password,
       email: this.configService.get<string>('ADMIN_EMAIL'),
       role: UserRole.ADMIN,
     });
-    await this.userRepository.save(admin);
+    await this.usersRepository.save(admin);
+  }
+
+  async hashPassword(password: string): Promise<string> {
+    return await bcrypt.hash(
+      password,
+      +this.configService.get<string>('BCRYPT_SALT'),
+    );
+  }
+  async comparePassword(password: string, hashedPassword): Promise<boolean> {
+    return await bcrypt.compare(password, hashedPassword);
   }
 }

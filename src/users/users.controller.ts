@@ -1,10 +1,7 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { Role } from '../auth/decorators/role';
-import { UserRole } from '../auth/enums/user-role.enum';
-import { AccessTokenGuard } from '../auth/guards/access-token.guard';
-import { RoleGuard } from '../auth/guards/authorization.guard';
+import { PaginatedUsers } from '../common/pagination/response';
 import { CreateUserDto } from './dto/user-create.dto';
 import { User } from './entitys/user.entity';
 import { UsersService } from './users.service';
@@ -14,14 +11,18 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
-  @Role(UserRole.ADMIN)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  // @Role(UserRole.ADMIN)
+  // @UseGuards(AccessTokenGuard, RoleGuard)
   @Get()
-  async getAllUsers(): Promise<User[]> {
-    return this.userService.getAllUsers();
+  async getAllUsers(@Query() query: { page: string }): Promise<PaginatedUsers> {
+    return this.userService.getAllUsers(query);
+  }
+  @Get('/statistic/:userId')
+  async getUserStatistic(@Param('userId') userId: string): Promise<any> {
+    return this.userService.getUserStatistic(+userId);
   }
   @Post()
-  async createUser(@Body() createUserDto: CreateUserDto): Promise<any> {
+  async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
     return await this.userService.createUser(createUserDto);
   }
   @Post('create/admin')
