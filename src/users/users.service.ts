@@ -24,6 +24,7 @@ export class UsersService {
     const take = 5;
     const skip = (page - 1) * take;
 
+    // Спочатку витягуємо користувачів з пагінацією
     const queryUsers = await this.usersRepository
       .createQueryBuilder('user')
       .where('user.role =:role', { role: UserRole.MANAGER })
@@ -31,20 +32,36 @@ export class UsersService {
       .skip(skip)
       .take(take);
 
-    const users = await queryUsers.getMany();
-    const totalCount = await queryUsers.getCount();
+    const [users, totalCount] = await Promise.all([
+      queryUsers.getMany(), // Отримуємо користувачів
+      queryUsers.getCount(), // Отримуємо загальну кількість користувачів
+    ]);
 
-    return { users, totalCount };
+    // Формуємо статистику для кожного користувача
+    const usersWithStatistic = await Promise.all(
+      users.map(async (user) => {
+        const userOrdersQuery = this.ordersRepository
+          .createQueryBuilder('orders')
+          .select('COUNT(*)', 'count')
+          .addSelect('orders.status', 'status')
+          .where('orders.userId = :id', { id: user.id })
+          .groupBy('orders.status');
+
+        const [total, statuses] = await Promise.all([
+          userOrdersQuery.getCount(), // Отримуємо загальну кількість замовлень
+          userOrdersQuery.getRawMany(), // Отримуємо статуси замовлень
+        ]);
+
+        return { ...user, statistic: { total, statuses } };
+      }),
+    );
+
+    // Повертаємо результат разом із загальною кількістю користувачів
+    return { users: usersWithStatistic, totalCount };
   }
 
   async getUserStatistic(id: number) {
-    const user = await this.usersRepository.findOneBy({ id });
-    if (!user) {
-      throw new HttpException(
-        `User with id=${id} do not exist`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    await this.findByIdOrThrow(id);
 
     const userOrders = await this.ordersRepository
       .createQueryBuilder('orders')
@@ -79,6 +96,30 @@ export class UsersService {
     await this.usersRepository.save(admin);
   }
 
+  async ban(id: number): Promise<User> {
+    const user = await this.findByIdOrThrow(id);
+    user.is_active = false;
+
+    return await this.usersRepository.save(user);
+  }
+
+  async unban(id: number): Promise<User> {
+    const user = await this.findByIdOrThrow(id);
+    user.is_active = true;
+
+    return await this.usersRepository.save(user);
+  }
+
+  async findByIdOrThrow(id: number): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) {
+      throw new HttpException(
+        `User with id=${id} do not exist`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return user;
+  }
   async hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(
       password,

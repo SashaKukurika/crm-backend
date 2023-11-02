@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { PaginatedUsers } from '../common/pagination/response';
@@ -17,9 +25,9 @@ export class UsersController {
   async getAllUsers(@Query() query: { page: string }): Promise<PaginatedUsers> {
     return this.userService.getAllUsers(query);
   }
-  @Get('/statistic/:userId')
-  async getUserStatistic(@Param('userId') userId: string): Promise<any> {
-    return this.userService.getUserStatistic(+userId);
+  @Get(':id/statistic')
+  async getUserStatistic(@Param('id') id: string): Promise<any> {
+    return this.userService.getUserStatistic(+id);
   }
   @Post()
   async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
@@ -28,5 +36,13 @@ export class UsersController {
   @Post('create/admin')
   async createAdmin() {
     return await this.userService.createAdmin();
+  }
+  @Patch(':id/ban')
+  async ban(@Param('id') id: string): Promise<User> {
+    return this.userService.ban(+id);
+  }
+  @Patch(':id/unban')
+  async unban(@Param('id') id: string): Promise<User> {
+    return this.userService.unban(+id);
   }
 }
