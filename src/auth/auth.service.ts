@@ -1,8 +1,11 @@
+import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import Redis from 'ioredis';
+// import { RedisService } from 'nestjs-redis';
 import { Repository } from 'typeorm';
 
 import { User } from '../users/entitys/user.entity';
@@ -16,12 +19,13 @@ export class AuthService {
     public readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    @InjectRedis() private readonly redis: Redis,
   ) {}
 
   async login(loginDto: LoginDto): Promise<JwtTokensInterface> {
     const { password, email } = loginDto;
 
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.findOneBy({ email });
 
     if (!user) {
       throw new HttpException(
@@ -39,7 +43,12 @@ export class AuthService {
       );
     }
 
-    return await this.getTokens(user);
+    const tokens = await this.getTokens(user);
+
+    this.redis.setex(`accessToken:${user.email}`, 1000, tokens.accessToken);
+    this.redis.setex(`refreshToken:${user.email}`, 10000, tokens.refreshToken);
+
+    return tokens;
   }
 
   async refreshTokens(token: string): Promise<JwtTokensInterface> {
@@ -47,9 +56,13 @@ export class AuthService {
       const { sub: email } = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
       });
-      const user = await this.userRepository.findOneOrFail({
-        where: { email },
-      });
+      const user = await this.userRepository.findOneBy({ email });
+      if (!user) {
+        throw new HttpException(
+          `User with email = ${email} not exist`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
       return this.getTokens(user);
     } catch (e) {
