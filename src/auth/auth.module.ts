@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/entitys/user.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { AccessTokenStrategy } from './passport-strategy/access-token.strategy';
+import { BearerStrategy } from './passport-strategy/bearer.strategy';
 
 @Module({
   imports: [
@@ -16,9 +16,16 @@ import { AccessTokenStrategy } from './passport-strategy/access-token.strategy';
       session: false,
     }),
     TypeOrmModule.forFeature([User]),
-    JwtModule.register({}),
+    JwtModule.register({
+      // якщо прописати тут то застосується до усіх токенів що ми створюємо, можна прокидати в signIn
+      // {
+      //   secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
+      //   expiresIn: this.configService.get<string>(
+      //     'JWT_ACCESS_TOKEN_EXPIRATION',
+      //   ),
+    }),
   ],
-  providers: [AuthService, AccessTokenStrategy],
+  providers: [AuthService, BearerStrategy],
   exports: [PassportModule, AuthService],
   controllers: [AuthController],
 })

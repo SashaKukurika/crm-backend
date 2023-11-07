@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 
+import { AuthService } from '../auth/auth.service';
 import { UserRole } from '../auth/enums/user-role.enum';
 import { PaginatedUsers } from '../common/pagination/response';
 import { Orders } from '../orders/entitys/orders.entity';
@@ -18,6 +19,7 @@ export class UsersService {
     @InjectRepository(Orders)
     private readonly ordersRepository: Repository<Orders>,
     private readonly configService: ConfigService,
+    private readonly authService: AuthService,
   ) {}
   async getAllUsers(query: { page: string }): Promise<PaginatedUsers> {
     const page = +query.page || 1;
@@ -74,6 +76,11 @@ export class UsersService {
 
     return { total, statuses };
   }
+
+  async getActivateToken(id: number): Promise<string> {
+    return await this.authService.getActivateToken(id);
+  }
+
   async createUser(createUserDto: CreateUserDto): Promise<User> {
     const user = this.usersRepository.create({
       ...createUserDto,

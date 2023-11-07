@@ -29,6 +29,10 @@ export class UsersController {
   async getUserStatistic(@Param('id') id: string): Promise<any> {
     return this.userService.getUserStatistic(+id);
   }
+  @Get(':id/activateToken')
+  async getActivateToken(@Param('id') id: string): Promise<string> {
+    return this.userService.getActivateToken(+id);
+  }
   @Post()
   async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
     return await this.userService.createUser(createUserDto);
