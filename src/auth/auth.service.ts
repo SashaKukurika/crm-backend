@@ -112,6 +112,7 @@ export class AuthService {
       this.jwtService.signAsync(
         {
           email: user.email,
+          id: user.id,
           role: user.role,
         },
         {
@@ -124,6 +125,7 @@ export class AuthService {
       this.jwtService.signAsync(
         {
           email: user.email,
+          id: user.id,
           role: user.role,
         },
         {
