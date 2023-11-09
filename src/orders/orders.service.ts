@@ -22,6 +22,7 @@ export class OrdersService {
   }
 
   async getExel(query: OrderQueryDto): Promise<Workbook> {
+    // todo check exel for column
     const searchedAndSortedOrders =
       await this.ordersRepository.searchAndSortOrders(query);
     const orders = await searchedAndSortedOrders.getMany();

@@ -41,8 +41,11 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<JwtTokensInterface> {
     const { password, email } = loginDto;
 
-    const user = await this.userRepository.findOneBy({ email });
-
+    const user = await this.userRepository.findOneBy({
+      email,
+      is_active: true,
+    });
+    // todo повідомлення що неактивний
     if (!user) {
       throw new HttpException(
         'Wrong email or password',

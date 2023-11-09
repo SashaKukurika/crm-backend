@@ -77,7 +77,7 @@ export class OrderQueryDto {
   @ApiProperty()
   @IsString()
   @IsOptional()
-  manager: string;
+  user: string;
 
   @ApiProperty()
   @IsString()

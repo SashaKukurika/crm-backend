@@ -34,6 +34,7 @@ export class AuthController {
   }
   @Post('/login')
   async login(@Body() loginDto: LoginDto): Promise<JwtTokensInterface> {
+    // todo якщо is_active = false не давати логінитись
     return await this.authService.login(loginDto);
   }
 

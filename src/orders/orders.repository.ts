@@ -122,6 +122,7 @@ export class OrdersRepository extends Repository<Orders> {
       { id },
       {
         status: order.status ? order.status : StatusEnum.IN_WORK,
+        user,
       },
     );
     const newComment = await this.commentsRepository.save(comment);
@@ -146,23 +147,27 @@ export class OrdersRepository extends Repository<Orders> {
       start_date,
       end_date,
       phone,
-      manager,
+      user,
       email,
     } = query;
 
     const queryBuilder = await this.createQueryBuilder('orders')
       .leftJoinAndSelect('orders.comments', 'comments')
       .leftJoinAndSelect('orders.group', 'group')
+      .leftJoinAndSelect('orders.user', 'manager')
       .leftJoinAndSelect('comments.user', 'user')
       .orderBy('orders.id', 'DESC')
       .addOrderBy('comments.created_at', 'DESC');
 
     if (order) {
-      if (order.startsWith('-')) {
-        await queryBuilder.orderBy(`orders.${order.substring(1)}`, 'DESC');
-      } else {
-        await queryBuilder.orderBy(`orders.${order}`, 'ASC');
-      }
+      const [sortOrder, orderValue] = order?.startsWith('-')
+        ? ['DESC', order?.substring(1)]
+        : ['ASC', order];
+      const orderByField = order?.includes('manager')
+        ? 'manager.name'
+        : `orders.${orderValue}`;
+
+      await queryBuilder.orderBy(orderByField, sortOrder as 'ASC' | 'DESC');
     }
 
     if (name)
@@ -214,7 +219,12 @@ export class OrdersRepository extends Repository<Orders> {
       await queryBuilder.andWhere(`group.name = :group`, {
         group,
       });
-    // todo add manager
+
+    if (user)
+      await queryBuilder.andWhere(`manager.name = :name`, {
+        name: user,
+      });
+
     if (start_date)
       await queryBuilder.andWhere(`orders.created_at > :start_date`, {
         start_date,
