@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { GroupsCreateDto } from './dto/groups-create.dto';
 import { Groups } from './entitys/groups.entity';
 
 @Injectable()
@@ -15,7 +16,7 @@ export class GroupsService {
     return this.groupsRepository.find();
   }
 
-  async createGroups(groupsCreateDto): Promise<any> {
+  async createGroups(groupsCreateDto: GroupsCreateDto): Promise<Groups> {
     try {
       const finedGroup = await this.groupsRepository.findOneBy({
         name: groupsCreateDto.name,

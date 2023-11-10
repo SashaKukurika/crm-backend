@@ -92,6 +92,10 @@ export class OrdersRepository extends Repository<Orders> {
         HttpStatus.BAD_REQUEST,
       );
     }
+    if (orderUpdateDto.status === StatusEnum.NEW) {
+      orderUpdateDto.user = null;
+    }
+
     Object.assign(order, { ...orderUpdateDto, group });
     return await this.save(order);
   }

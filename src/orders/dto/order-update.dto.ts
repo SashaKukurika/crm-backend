@@ -85,7 +85,6 @@ export class OrderUpdateDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  // @IsEnum(Groups)
   group: string;
 
   @ApiProperty()

@@ -21,6 +21,7 @@ import { PaginatedOrders } from '../common/pagination/response';
 import { OrderQueryDto } from '../common/query/order.query.dto';
 import { CommentsCreateDto } from './dto/comments-create.dto';
 import { OrderUpdateDto } from './dto/order-update.dto';
+import { Orders } from './entitys/orders.entity';
 import { IOrderStatistic } from './inretfaces/order-statistic.interface';
 import { OrdersService } from './orders.service';
 
@@ -63,7 +64,7 @@ export class OrdersController {
   async updateById(
     @Body() orderUpdateDto: OrderUpdateDto,
     @Param('orderId') orderId: string,
-  ): Promise<any> {
+  ): Promise<Orders> {
     return await this.ordersService.updateById(orderUpdateDto, orderId);
   }
 
