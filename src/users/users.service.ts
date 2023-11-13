@@ -96,6 +96,9 @@ export class UsersService {
       this.configService.get<string>('ADMIN_PASSWORD'),
     );
     const admin = await this.usersRepository.create({
+      is_active: true,
+      name: 'admin',
+      surname: 'adminovych',
       password,
       email: this.configService.get<string>('ADMIN_EMAIL'),
       role: UserRole.ADMIN,
@@ -121,7 +124,7 @@ export class UsersService {
     const user = await this.usersRepository.findOneBy({ id });
     if (!user) {
       throw new HttpException(
-        `User with id=${id} do not exist`,
+        `User with id=${id} doesn't exist`,
         HttpStatus.BAD_REQUEST,
       );
     }

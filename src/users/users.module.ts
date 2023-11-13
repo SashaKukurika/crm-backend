@@ -13,6 +13,6 @@ import { UsersService } from './users.service';
   providers: [UsersService],
   // imports some module to use his in this module
   imports: [TypeOrmModule.forFeature([User, Orders]), AuthModule],
-  exports: [],
+  exports: [UsersService],
 })
 export class UsersModule {}

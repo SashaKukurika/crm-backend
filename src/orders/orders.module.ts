@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { Groups } from '../group/entitys/groups.entity';
 import { User } from '../users/entitys/user.entity';
+import { UsersModule } from '../users/users.module';
 import { Comment } from './entitys/comment.entity';
 import { Orders } from './entitys/orders.entity';
 import { OrdersController } from './orders.controller';
@@ -18,6 +19,7 @@ import { OrdersService } from './orders.service';
   imports: [
     TypeOrmModule.forFeature([Orders, Groups, Comment, User]),
     AuthModule,
+    UsersModule,
   ],
   exports: [],
 })

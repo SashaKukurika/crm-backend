@@ -7,6 +7,7 @@ import { PaginatedOrders } from '../common/pagination/response';
 import { OrderQueryDto } from '../common/query/order.query.dto';
 import { Groups } from '../group/entitys/groups.entity';
 import { User } from '../users/entitys/user.entity';
+import { UsersService } from '../users/users.service';
 import { CommentsCreateDto } from './dto/comments-create.dto';
 import { OrderUpdateDto } from './dto/order-update.dto';
 import { Comment } from './entitys/comment.entity';
@@ -23,6 +24,7 @@ export class OrdersRepository extends Repository<Orders> {
     private readonly commentsRepository: Repository<Comment>,
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    private readonly usersService: UsersService,
   ) {
     super(Orders, dataSource.manager);
   }
@@ -37,9 +39,18 @@ export class OrdersRepository extends Repository<Orders> {
     searchedAndSortedOrders.skip((page - 1) * limit).take(limit);
 
     const totalCount = await searchedAndSortedOrders.getCount();
+    const orders = await searchedAndSortedOrders.getMany();
+
+    // Сортування коментарів для кожного замовлення
+    orders.forEach((order) => {
+      order.comments.sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+    });
 
     return {
-      orders: await searchedAndSortedOrders.getMany(),
+      orders,
       totalCount,
     };
   }
@@ -75,47 +86,35 @@ export class OrdersRepository extends Repository<Orders> {
     orderUpdateDto: OrderUpdateDto,
     id: number,
   ): Promise<Orders> {
-    const order = await this.findOneBy({ id });
-    if (!order) {
-      throw new HttpException(
-        `Order with id=${id} do not exist`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const order = await this.findByIdOrThrow(id);
+
+    const user = await this.usersService.findByIdOrThrow(
+      orderUpdateDto.user.id,
+    );
 
     const group = await this.groupsRepository.findOneBy({
       name: orderUpdateDto.group,
     });
     if (!group) {
       throw new HttpException(
-        `Group with name=${orderUpdateDto.group} do not exist`,
+        `Group with name=${orderUpdateDto.group} doesn't exist`,
         HttpStatus.BAD_REQUEST,
       );
     }
-    if (orderUpdateDto.status === StatusEnum.NEW) {
-      orderUpdateDto.user = null;
-    }
-
-    Object.assign(order, { ...orderUpdateDto, group });
+    orderUpdateDto.status === StatusEnum.NEW
+      ? Object.assign(order, { ...orderUpdateDto, group, user: null })
+      : Object.assign(order, { ...orderUpdateDto, group, user });
+    // todo забрати непотрібні дані з відповіді
     return await this.save(order);
   }
 
+  // todo що повертаю
   async addComment(id: number, data: CommentsCreateDto) {
     const { text, userId } = data;
-    const user = await this.usersRepository.findOneBy({ id: userId });
-    if (!user) {
-      throw new HttpException(
-        `User with id=${userId} not exist`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    const order = await this.findOneBy({ id });
-    if (!order) {
-      throw new HttpException(
-        `Order with id=${id} not exist`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+
+    const user = await this.usersService.findByIdOrThrow(userId);
+    const order = await this.findByIdOrThrow(id);
+
     const comment = await this.commentsRepository.create({
       text,
       user: { ...user },
@@ -125,10 +124,14 @@ export class OrdersRepository extends Repository<Orders> {
     await this.update(
       { id },
       {
-        status: order.status ? order.status : StatusEnum.IN_WORK,
+        status:
+          order.status && order.status !== StatusEnum.NEW
+            ? order.status
+            : StatusEnum.IN_WORK,
         user,
       },
     );
+
     const newComment = await this.commentsRepository.save(comment);
     delete newComment.order;
 
@@ -156,12 +159,13 @@ export class OrdersRepository extends Repository<Orders> {
     } = query;
 
     const queryBuilder = await this.createQueryBuilder('orders')
-      .leftJoinAndSelect('orders.comments', 'comments')
-      .leftJoinAndSelect('orders.group', 'group')
-      .leftJoinAndSelect('orders.user', 'manager')
-      .leftJoinAndSelect('comments.user', 'user')
       .orderBy('orders.id', 'DESC')
-      .addOrderBy('comments.created_at', 'DESC');
+      .leftJoinAndSelect('orders.group', 'group')
+      .leftJoin('orders.user', 'manager')
+      .addSelect(['manager.name', 'manager.surname'])
+      .leftJoinAndSelect('orders.comments', 'comments')
+      .leftJoin('comments.user', 'user')
+      .addSelect(['user.name', 'user.surname']);
 
     if (order) {
       const [sortOrder, orderValue] = order?.startsWith('-')
@@ -171,7 +175,7 @@ export class OrdersRepository extends Repository<Orders> {
         ? 'manager.name'
         : `orders.${orderValue}`;
 
-      await queryBuilder.orderBy(orderByField, sortOrder as 'ASC' | 'DESC');
+      queryBuilder.orderBy(orderByField, sortOrder as 'ASC' | 'DESC');
     }
 
     if (name)
@@ -240,5 +244,16 @@ export class OrdersRepository extends Repository<Orders> {
       });
 
     return queryBuilder;
+  }
+
+  async findByIdOrThrow(id: number): Promise<Orders> {
+    const order = await this.findOneBy({ id });
+    if (!order) {
+      throw new HttpException(
+        `Order with id=${id} doesn't exist`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return order;
   }
 }
