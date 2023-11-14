@@ -5,6 +5,5 @@ export class GroupsCreateDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  // todo add custom decorator IsUnique
   name: string;
 }

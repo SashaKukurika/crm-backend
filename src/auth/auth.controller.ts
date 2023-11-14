@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { User } from '../users/entitys/user.entity';
 import { AuthService } from './auth.service';
 import { ActivateUserDto } from './dto/activate-user.dto';
 import { LoginDto } from './dto/login.dto';
@@ -22,7 +23,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get('/me')
-  async me(@Request() req: Request) {
+  async me(@Request() req: Request): Promise<Partial<User>> {
     const accessToken: string = req.headers['authorization'];
     const splice = accessToken.split(' ');
     if (splice.length === 2 && splice[0] === 'Bearer') {
@@ -34,7 +35,6 @@ export class AuthController {
   }
   @Post('/login')
   async login(@Body() loginDto: LoginDto): Promise<JwtTokensInterface> {
-    // todo якщо is_active = false не давати логінитись
     return await this.authService.login(loginDto);
   }
 

@@ -1,4 +1,6 @@
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -26,6 +28,14 @@ export class Orders {
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   email: string;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  convertEmailToLowerCase() {
+    if (this.email) {
+      this.email = this.email.toLowerCase();
+    }
+  }
 
   @Column({ type: 'varchar', length: 12, nullable: true })
   phone: string;

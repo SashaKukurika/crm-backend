@@ -7,6 +7,7 @@ import { ExtractJwt } from 'passport-jwt';
 
 import { User } from '../../users/entitys/user.entity';
 import { AuthService } from '../auth.service';
+import { TokensTypeEnum } from '../enums/tokens-type.enum';
 
 @Injectable()
 export class BearerStrategy extends PassportStrategy(Strategy, 'bearer') {
@@ -25,9 +26,15 @@ export class BearerStrategy extends PassportStrategy(Strategy, 'bearer') {
   async validate(token: string): Promise<User> {
     let user = null;
     try {
-      const jwtPayload = await this.authService.verifyAccessToken(token);
+      const jwtPayload = await this.authService.verifyToken(
+        token,
+        TokensTypeEnum.ACCESS,
+      );
       user = await this.authService.validateUser(jwtPayload);
-      await this.authService.verifyAccessTokenFromRedis(jwtPayload.email);
+      await this.authService.verifyTokenRedis(
+        jwtPayload.email,
+        TokensTypeEnum.ACCESS,
+      );
     } catch (e) {
       console.log(
         new Date().toISOString(),

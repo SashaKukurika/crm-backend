@@ -38,7 +38,7 @@ export class UsersController {
     return await this.userService.createUser(createUserDto);
   }
   @Post('create/admin')
-  async createAdmin() {
+  async createAdmin(): Promise<void> {
     return await this.userService.createAdmin();
   }
   @Patch(':id/ban')

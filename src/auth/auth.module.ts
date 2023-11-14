@@ -16,14 +16,7 @@ import { BearerStrategy } from './passport-strategy/bearer.strategy';
       session: false,
     }),
     TypeOrmModule.forFeature([User]),
-    JwtModule.register({
-      // якщо прописати тут то застосується до усіх токенів що ми створюємо, можна прокидати в signIn
-      // {
-      //   secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
-      //   expiresIn: this.configService.get<string>(
-      //     'JWT_ACCESS_TOKEN_EXPIRATION',
-      //   ),
-    }),
+    JwtModule.register({}),
   ],
   providers: [AuthService, BearerStrategy],
   exports: [PassportModule, AuthService],

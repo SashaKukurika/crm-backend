@@ -15,7 +15,9 @@ export class GroupsController {
     return this.groupsService.getAllGroups();
   }
   @Post()
-  async createGroups(@Body() groupsCreateDto: GroupsCreateDto): Promise<any> {
+  async createGroups(
+    @Body() groupsCreateDto: GroupsCreateDto,
+  ): Promise<Groups> {
     return await this.groupsService.createGroups(groupsCreateDto);
   }
 }

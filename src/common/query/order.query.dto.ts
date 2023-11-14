@@ -44,7 +44,6 @@ export class OrderQueryDto {
   @IsOptional()
   age: string;
 
-  // todo add enum to other
   @ApiProperty()
   @IsString()
   @IsOptional()

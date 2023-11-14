@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsEnum,
@@ -41,6 +42,7 @@ export class OrderUpdateDto {
 
   @ApiProperty()
   @IsOptional()
+  @Transform(({ value }) => value.toLowerCase())
   @IsEmail({}, { message: 'Invalid email address' })
   email: string;
 

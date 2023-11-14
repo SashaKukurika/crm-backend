@@ -15,6 +15,7 @@ import { Repository } from 'typeorm';
 import { User } from '../users/entitys/user.entity';
 import { ActivateUserDto } from './dto/activate-user.dto';
 import { LoginDto } from './dto/login.dto';
+import { TokensTypeEnum } from './enums/tokens-type.enum';
 import { UserRole } from './enums/user-role.enum';
 import { JWTPayload } from './interface/auth.interface';
 import { JwtTokensInterface } from './interface/jwt-token.interface';
@@ -29,11 +30,16 @@ export class AuthService {
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
-  async me(token: string): Promise<User> {
+  async me(token: string): Promise<Partial<User>> {
     try {
-      const { id, email } = await this.verifyAccessToken(token);
-      await this.verifyAccessTokenFromRedis(email);
-      return await this.userRepository.findOneBy({ id });
+      const { id, email } = await this.verifyToken(
+        token,
+        TokensTypeEnum.ACCESS,
+      );
+      await this.verifyTokenRedis(email, TokensTypeEnum.ACCESS);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...user } = await this.userRepository.findOneBy({ id });
+      return user;
     } catch (error) {
       throw new UnauthorizedException('Invalid token or user not found');
     }
@@ -41,16 +47,17 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<JwtTokensInterface> {
     const { password, email } = loginDto;
 
-    const user = await this.userRepository.findOneBy({
-      email,
-      is_active: true,
-    });
-    // todo повідомлення що неактивний
+    const user = await this.userRepository.findOneBy({ email });
+
     if (!user) {
       throw new HttpException(
         'Wrong email or password',
         HttpStatus.BAD_REQUEST,
       );
+    }
+
+    if (!user.is_active) {
+      throw new HttpException("User doesn't activated", HttpStatus.BAD_REQUEST);
     }
 
     const isMatched = await this.comparePasswords(password, user.password);
@@ -67,10 +74,8 @@ export class AuthService {
 
   async refreshToken(token: string): Promise<JwtTokensInterface> {
     try {
-      const { email } = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
-      });
-      await this.verifyRefreshTokenFromRedis(email);
+      const { email } = await this.verifyToken(token, TokensTypeEnum.REFRESH);
+      await this.verifyTokenRedis(email, TokensTypeEnum.REFRESH);
       const user = await this.userRepository.findOneBy({ email });
       if (!user) {
         throw new HttpException(`User not exist`, HttpStatus.BAD_REQUEST);
@@ -87,14 +92,19 @@ export class AuthService {
     { password }: ActivateUserDto,
   ): Promise<void> {
     try {
-      const { id }: JWTPayload = await this.jwtService.verifyAsync(
+      const { id } = await this.verifyToken(
         activateToken,
-        {
-          secret: this.configService.get<string>('JWT_ACTIVATE_TOKEN_SECRET'),
-        },
+        TokensTypeEnum.ACTIVATE,
       );
-      await this.userRepository.findOneByOrFail({ id });
-      await this.verifyActivateTokenFromRedis(id.toString());
+      const user = await this.userRepository.findOneBy({ id });
+
+      if (!user) {
+        throw new HttpException(
+          `User with id=${id} doesn't exist`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      await this.verifyTokenRedis(user.email, TokensTypeEnum.ACTIVATE);
 
       const hashedPassword = await this.hashPassword(password);
 
@@ -117,6 +127,7 @@ export class AuthService {
           email: user.email,
           id: user.id,
           role: user.role,
+          type: TokensTypeEnum.ACCESS,
         },
         {
           secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
@@ -130,6 +141,7 @@ export class AuthService {
           email: user.email,
           id: user.id,
           role: user.role,
+          type: TokensTypeEnum.REFRESH,
         },
         {
           secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
@@ -139,11 +151,44 @@ export class AuthService {
         },
       ),
     ]);
-    this.redis.setex(`accessToken:${user.email}`, 86_400, accessToken);
-    this.redis.setex(`refreshToken:${user.email}`, 86_400 * 7, refreshToken);
+    this.redis.setex(`${TokensTypeEnum.ACCESS}:${user.email}`, 60, accessToken);
+    this.redis.setex(
+      `${TokensTypeEnum.REFRESH}:${user.email}`,
+      60 * 2,
+      refreshToken,
+    );
     return { accessToken, refreshToken };
   }
 
+  async getActivateToken(id: number): Promise<string> {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) {
+      throw new HttpException(
+        `User with id=${id} doesn't exist`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const activateToken = await this.jwtService.signAsync(
+      {
+        id,
+        role: UserRole.MANAGER,
+        email: user.email,
+        type: TokensTypeEnum.ACTIVATE,
+      },
+      {
+        secret: this.configService.get<string>('JWT_ACTIVATE_TOKEN_SECRET'),
+        expiresIn: this.configService.get<string>(
+          'JWT_ACTIVATE_TOKEN_EXPIRATION',
+        ),
+      },
+    );
+    this.redis.setex(
+      `${TokensTypeEnum.ACTIVATE}:${user.email}`,
+      600,
+      activateToken,
+    );
+    return activateToken;
+  }
   async hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(
       password,
@@ -165,65 +210,34 @@ export class AuthService {
     return user;
   }
 
-  async verifyAccessToken(token: string): Promise<JWTPayload> {
+  async verifyToken(token: string, type: TokensTypeEnum): Promise<JWTPayload> {
     try {
-      return await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
-      });
+      switch (type) {
+        case TokensTypeEnum.ACCESS:
+          return await this.jwtService.verifyAsync(token, {
+            secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
+          });
+        case TokensTypeEnum.REFRESH:
+          return await this.jwtService.verifyAsync(token, {
+            secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
+          });
+        case TokensTypeEnum.ACTIVATE:
+          return await this.jwtService.verifyAsync(token, {
+            secret: this.configService.get<string>('JWT_ACTIVATE_TOKEN_SECRET'),
+          });
+        default:
+          throw new HttpException('No such token type', HttpStatus.BAD_REQUEST);
+      }
     } catch (err) {
-      console.log(new Date().toISOString(), token);
-      throw new UnauthorizedException();
+      throw new UnauthorizedException(err, { description: 'Invalid token' });
     }
   }
-
-  async verifyAccessTokenFromRedis(email: string): Promise<void> {
-    try {
-      const token = await this.redis.get(`accessToken:${email}`);
-      if (!token) {
-        throw new Error(`Access token not found`);
-      }
-    } catch (error) {
-      console.error(`Error while getting access token: ${error.message}`);
-      throw error;
+  async verifyTokenRedis(email: string, type: TokensTypeEnum): Promise<void> {
+    const token = await this.redis.get(`${type}:${email}`);
+    if (!token) {
+      throw new Error(
+        `${type[0].toUpperCase() + type.slice(1)} token not found`,
+      );
     }
-  }
-  async verifyRefreshTokenFromRedis(email: string): Promise<void> {
-    try {
-      const token = await this.redis.get(`refreshToken:${email}`);
-      if (!token) {
-        throw new Error(`Refresh token not found`);
-      }
-    } catch (error) {
-      console.error(`Error while getting refresh token: ${error.message}`);
-      throw error;
-    }
-  }
-  async verifyActivateTokenFromRedis(id: string): Promise<void> {
-    try {
-      const token = await this.redis.get(`activateToken:${id}`);
-      if (!token) {
-        throw new Error(`Refresh token not found`);
-      }
-    } catch (error) {
-      console.error(`Error while getting refresh token: ${error.message}`);
-      throw error;
-    }
-  }
-
-  async getActivateToken(id: number): Promise<string> {
-    const activateToken = await this.jwtService.signAsync(
-      {
-        id,
-        role: UserRole.MANAGER,
-      },
-      {
-        secret: this.configService.get<string>('JWT_ACTIVATE_TOKEN_SECRET'),
-        expiresIn: this.configService.get<string>(
-          'JWT_ACTIVATE_TOKEN_EXPIRATION',
-        ),
-      },
-    );
-    this.redis.setex(`activateToken:${id}`, 600, activateToken);
-    return activateToken;
   }
 }

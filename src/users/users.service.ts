@@ -31,7 +31,7 @@ export class UsersService {
       .createQueryBuilder('user')
       .where('user.role =:role', { role: UserRole.MANAGER })
       .orderBy('user.created_at', 'DESC')
-      .skip(skip)
+      .skip(skip) // todo check like in orders
       .take(take);
 
     const [users, totalCount] = await Promise.all([
@@ -91,7 +91,7 @@ export class UsersService {
     return newUser;
   }
 
-  async createAdmin() {
+  async createAdmin(): Promise<void> {
     const password = await this.hashPassword(
       this.configService.get<string>('ADMIN_PASSWORD'),
     );
@@ -106,20 +106,21 @@ export class UsersService {
     await this.usersRepository.save(admin);
   }
 
+  // todo user without password
   async ban(id: number): Promise<User> {
     const user = await this.findByIdOrThrow(id);
     user.is_active = false;
 
     return await this.usersRepository.save(user);
   }
-
+  // todo user without password
   async unban(id: number): Promise<User> {
     const user = await this.findByIdOrThrow(id);
     user.is_active = true;
 
     return await this.usersRepository.save(user);
   }
-
+  // todo user without password
   async findByIdOrThrow(id: number): Promise<User> {
     const user = await this.usersRepository.findOneBy({ id });
     if (!user) {
@@ -135,8 +136,5 @@ export class UsersService {
       password,
       +this.configService.get<string>('BCRYPT_SALT'),
     );
-  }
-  async comparePassword(password: string, hashedPassword): Promise<boolean> {
-    return await bcrypt.compare(password, hashedPassword);
   }
 }

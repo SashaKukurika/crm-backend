@@ -12,6 +12,7 @@ import { CommentsCreateDto } from './dto/comments-create.dto';
 import { OrderUpdateDto } from './dto/order-update.dto';
 import { Comment } from './entitys/comment.entity';
 import { Orders } from './entitys/orders.entity';
+import { IAddCommentResponse } from './inretfaces/addComment-response.interface';
 import { IOrderStatistic } from './inretfaces/order-statistic.interface';
 
 @Injectable()
@@ -104,12 +105,17 @@ export class OrdersRepository extends Repository<Orders> {
     orderUpdateDto.status === StatusEnum.NEW
       ? Object.assign(order, { ...orderUpdateDto, group, user: null })
       : Object.assign(order, { ...orderUpdateDto, group, user });
-    // todo забрати непотрібні дані з відповіді
-    return await this.save(order);
+
+    const updatedOrder = await this.save(order);
+    delete updatedOrder.user.password;
+
+    return updatedOrder;
   }
 
-  // todo що повертаю
-  async addComment(id: number, data: CommentsCreateDto) {
+  async addComment(
+    id: number,
+    data: CommentsCreateDto,
+  ): Promise<IAddCommentResponse> {
     const { text, userId } = data;
 
     const user = await this.usersService.findByIdOrThrow(userId);
@@ -134,6 +140,7 @@ export class OrdersRepository extends Repository<Orders> {
 
     const newComment = await this.commentsRepository.save(comment);
     delete newComment.order;
+    delete newComment.user.password;
 
     return { ...newComment, orderId: id };
   }
@@ -162,7 +169,7 @@ export class OrdersRepository extends Repository<Orders> {
       .orderBy('orders.id', 'DESC')
       .leftJoinAndSelect('orders.group', 'group')
       .leftJoin('orders.user', 'manager')
-      .addSelect(['manager.name', 'manager.surname'])
+      .addSelect(['manager.name', 'manager.surname', 'manager.id'])
       .leftJoinAndSelect('orders.comments', 'comments')
       .leftJoin('comments.user', 'user')
       .addSelect(['user.name', 'user.surname']);

@@ -22,6 +22,7 @@ import { OrderQueryDto } from '../common/query/order.query.dto';
 import { CommentsCreateDto } from './dto/comments-create.dto';
 import { OrderUpdateDto } from './dto/order-update.dto';
 import { Orders } from './entitys/orders.entity';
+import { IAddCommentResponse } from './inretfaces/addComment-response.interface';
 import { IOrderStatistic } from './inretfaces/order-statistic.interface';
 import { OrdersService } from './orders.service';
 
@@ -72,7 +73,7 @@ export class OrdersController {
   async addComment(
     @Param('orderId') orderId: string,
     @Body() data: CommentsCreateDto,
-  ) {
+  ): Promise<IAddCommentResponse> {
     return await this.ordersService.addComment(orderId, data);
   }
 }

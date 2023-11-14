@@ -13,13 +13,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle('SRM for online courses')
-    .setDescription('The SRM API description')
+    .setTitle('CRM for online courses')
+    .setDescription('The CRM API description')
     .setVersion('1.0')
-    .addTag('srm')
+    .addTag('crm')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('srm/api', app, document);
+  SwaggerModule.setup('crm/api', app, document);
 
   app.enableCors({
     origin: process.env.ERONT_CORS_URL,
