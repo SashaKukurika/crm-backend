@@ -3,9 +3,9 @@ import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 import { CoursesEnum } from '../enums/courses.enum';
 import { CoursesFormatEnum } from '../enums/courses-format.enum';
+import { CoursesStatusEnum } from '../enums/courses-status.enum';
 import { CoursesTypeEnum } from '../enums/courses-type.enum';
 import { OrderFieldEnum } from '../enums/order-field.enum';
-import { StatusEnum } from '../enums/status.enum';
 
 export class OrderQueryDto {
   @ApiProperty()
@@ -65,8 +65,8 @@ export class OrderQueryDto {
   @ApiProperty()
   @IsString()
   @IsOptional()
-  @IsEnum(StatusEnum)
-  status: StatusEnum;
+  @IsEnum(CoursesStatusEnum)
+  status: CoursesStatusEnum;
 
   @ApiProperty()
   @IsString()

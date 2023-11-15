@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 
-import { StatusEnum } from '../common/enums/status.enum';
+import { CoursesStatusEnum } from '../common/enums/courses-status.enum';
 import { PaginatedOrders } from '../common/pagination/response';
 import { OrderQueryDto } from '../common/query/order.query.dto';
 import { Groups } from '../group/entitys/groups.entity';
@@ -33,11 +33,12 @@ export class OrdersRepository extends Repository<Orders> {
     query: OrderQueryDto,
   ): Promise<PaginatedOrders> {
     const page = +query.page || 1;
-    const limit = 25;
+    const take = 25;
+    const skip = (page - 1) * take;
 
     const searchedAndSortedOrders = await this.searchAndSortOrders(query);
 
-    searchedAndSortedOrders.skip((page - 1) * limit).take(limit);
+    searchedAndSortedOrders.skip(skip).take(take);
 
     const totalCount = await searchedAndSortedOrders.getCount();
     const orders = await searchedAndSortedOrders.getMany();
@@ -71,7 +72,9 @@ export class OrdersRepository extends Repository<Orders> {
     statuses.forEach((value) => (value.count = Number(value.count)));
     // знаходимо де не вказаний статус і де статус = 'New'
     const nullStatus = statuses.find((value) => value.status === null);
-    const newStatus = statuses.find((value) => value.status === StatusEnum.NEW);
+    const newStatus = statuses.find(
+      (value) => value.status === CoursesStatusEnum.NEW,
+    );
 
     // якщо обидва є то додаємо їх значення і записуємо в newStatus
     if (nullStatus && newStatus)
@@ -102,14 +105,11 @@ export class OrdersRepository extends Repository<Orders> {
         HttpStatus.BAD_REQUEST,
       );
     }
-    orderUpdateDto.status === StatusEnum.NEW
+    orderUpdateDto.status === CoursesStatusEnum.NEW
       ? Object.assign(order, { ...orderUpdateDto, group, user: null })
       : Object.assign(order, { ...orderUpdateDto, group, user });
 
-    const updatedOrder = await this.save(order);
-    delete updatedOrder.user.password;
-
-    return updatedOrder;
+    return await this.save(order);
   }
 
   async addComment(
@@ -131,9 +131,9 @@ export class OrdersRepository extends Repository<Orders> {
       { id },
       {
         status:
-          order.status && order.status !== StatusEnum.NEW
+          order.status && order.status !== CoursesStatusEnum.NEW
             ? order.status
-            : StatusEnum.IN_WORK,
+            : CoursesStatusEnum.IN_WORK,
         user,
       },
     );

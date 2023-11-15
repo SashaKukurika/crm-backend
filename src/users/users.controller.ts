@@ -25,10 +25,6 @@ export class UsersController {
   async getAllUsers(@Query() query: { page: string }): Promise<PaginatedUsers> {
     return this.userService.getAllUsers(query);
   }
-  @Get(':id/statistic')
-  async getUserStatistic(@Param('id') id: string): Promise<any> {
-    return this.userService.getUserStatistic(+id);
-  }
   @Get(':id/activateToken')
   async getActivateToken(@Param('id') id: string): Promise<string> {
     return this.userService.getActivateToken(+id);

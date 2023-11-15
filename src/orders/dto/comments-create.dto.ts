@@ -12,7 +12,7 @@ export class CommentsCreateDto {
   @IsNotEmpty()
   @IsString()
   @MinLength(1)
-  @MaxLength(120)
+  @MaxLength(100)
   text: string;
 
   @ApiProperty()

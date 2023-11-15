@@ -5,6 +5,7 @@ export class JwtTokensInterface {
   @ApiProperty()
   @IsString()
   accessToken: string;
+
   @ApiProperty()
   @IsString()
   refreshToken: string;

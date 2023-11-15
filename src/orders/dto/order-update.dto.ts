@@ -15,8 +15,8 @@ import {
 
 import { CoursesEnum } from '../../common/enums/courses.enum';
 import { CoursesFormatEnum } from '../../common/enums/courses-format.enum';
+import { CoursesStatusEnum } from '../../common/enums/courses-status.enum';
 import { CoursesTypeEnum } from '../../common/enums/courses-type.enum';
-import { StatusEnum } from '../../common/enums/status.enum';
 import { User } from '../../users/entitys/user.entity';
 
 export class OrderUpdateDto {
@@ -25,7 +25,7 @@ export class OrderUpdateDto {
   @IsString()
   @MinLength(1)
   @MaxLength(25)
-  @Matches(/^[a-zA-Zа-яА-Я\s]*$/, {
+  @Matches(/^[a-zA-ZА-ЩЬЮЯҐЄІЇа-щьюяґєії]*$/, {
     message: 'Name must not contain special characters or digits',
   })
   name: string;
@@ -35,8 +35,8 @@ export class OrderUpdateDto {
   @IsString()
   @MinLength(1)
   @MaxLength(30)
-  @Matches(/^[a-zA-Zа-яА-Я\s]*$/, {
-    message: 'Name must not contain special characters or digits',
+  @Matches(/^[a-zA-ZА-ЩЬЮЯҐЄІЇа-щьюяґєії]*$/, {
+    message: 'Surname must not contain special characters or digits',
   })
   surname: string;
 
@@ -103,8 +103,8 @@ export class OrderUpdateDto {
 
   @ApiProperty()
   @IsOptional()
-  @IsEnum(StatusEnum)
-  status: StatusEnum;
+  @IsEnum(CoursesStatusEnum)
+  status: CoursesStatusEnum;
 
   @ApiProperty()
   @IsOptional()

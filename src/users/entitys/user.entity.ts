@@ -1,3 +1,4 @@
+import { IsEmail, Matches } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -16,10 +17,16 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', length: 25, nullable: false })
+  @Matches(/^[a-zA-ZА-ЩЬЮЯҐЄІЇа-щьюяґєії]*$/, {
+    message: 'Name must not contain special characters or digits',
+  })
   name: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', length: 30, nullable: false })
+  @Matches(/^[a-zA-ZА-ЩЬЮЯҐЄІЇа-щьюяґєії]*$/, {
+    message: 'Surname must not contain special characters or digits',
+  })
   surname: string;
 
   @Column({ type: 'boolean', nullable: false, default: false })
@@ -39,8 +46,8 @@ export class User {
   })
   last_login: Date;
 
-  // nullable mean that it can't be empty when it's false
   @Column({ type: 'varchar', nullable: false, unique: true })
+  @IsEmail({}, { message: 'Invalid email address' })
   email: string;
 
   @Column({ type: 'varchar', nullable: false, default: 'manager' })

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsNumber } from 'class-validator';
 
-import { StatusEnum } from '../../common/enums/status.enum';
+import { CoursesStatusEnum } from '../../common/enums/courses-status.enum';
 
 export class IOrderStatistic {
   @ApiProperty()
@@ -15,8 +15,8 @@ export class IOrderStatistic {
 
 class Status {
   @ApiProperty()
-  @IsEnum(StatusEnum)
-  status: StatusEnum;
+  @IsEnum(CoursesStatusEnum)
+  status: CoursesStatusEnum;
 
   @ApiProperty()
   @IsNumber()

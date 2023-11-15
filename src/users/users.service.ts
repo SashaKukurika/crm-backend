@@ -31,7 +31,7 @@ export class UsersService {
       .createQueryBuilder('user')
       .where('user.role =:role', { role: UserRole.MANAGER })
       .orderBy('user.created_at', 'DESC')
-      .skip(skip) // todo check like in orders
+      .skip(skip)
       .take(take);
 
     const [users, totalCount] = await Promise.all([
@@ -60,21 +60,6 @@ export class UsersService {
 
     // Повертаємо результат разом із загальною кількістю користувачів
     return { users: usersWithStatistic, totalCount };
-  }
-
-  async getUserStatistic(id: number) {
-    await this.findByIdOrThrow(id);
-
-    const userOrders = await this.ordersRepository
-      .createQueryBuilder('orders')
-      .select('COUNT(*)', 'count')
-      .addSelect('orders.status', 'status')
-      .where('orders.userId =:id', { id });
-
-    const total = await userOrders.getCount();
-    const statuses = await userOrders.groupBy('orders.status').getRawMany();
-
-    return { total, statuses };
   }
 
   async getActivateToken(id: number): Promise<string> {
@@ -106,21 +91,21 @@ export class UsersService {
     await this.usersRepository.save(admin);
   }
 
-  // todo user without password
   async ban(id: number): Promise<User> {
     const user = await this.findByIdOrThrow(id);
     user.is_active = false;
-
-    return await this.usersRepository.save(user);
+    const banedUser = await this.usersRepository.save(user);
+    delete banedUser.password;
+    return banedUser;
   }
-  // todo user without password
+
   async unban(id: number): Promise<User> {
     const user = await this.findByIdOrThrow(id);
     user.is_active = true;
-
-    return await this.usersRepository.save(user);
+    const unBanedUser = await this.usersRepository.save(user);
+    delete unBanedUser.password;
+    return unBanedUser;
   }
-  // todo user without password
   async findByIdOrThrow(id: number): Promise<User> {
     const user = await this.usersRepository.findOneBy({ id });
     if (!user) {

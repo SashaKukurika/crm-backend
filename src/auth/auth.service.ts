@@ -31,18 +31,11 @@ export class AuthService {
   ) {}
 
   async me(token: string): Promise<Partial<User>> {
-    try {
-      const { id, email } = await this.verifyToken(
-        token,
-        TokensTypeEnum.ACCESS,
-      );
-      await this.verifyTokenRedis(email, TokensTypeEnum.ACCESS);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...user } = await this.userRepository.findOneBy({ id });
-      return user;
-    } catch (error) {
-      throw new UnauthorizedException('Invalid token or user not found');
-    }
+    const { id, email } = await this.verifyToken(token, TokensTypeEnum.ACCESS);
+    await this.verifyTokenRedis(email, TokensTypeEnum.ACCESS);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...user } = await this.userRepository.findOneBy({ id });
+    return user;
   }
   async login(loginDto: LoginDto): Promise<JwtTokensInterface> {
     const { password, email } = loginDto;

@@ -1,4 +1,4 @@
-export enum StatusEnum {
+export enum CoursesStatusEnum {
   IN_WORK = 'In work',
   NEW = 'New',
   AGREE = 'Agree',

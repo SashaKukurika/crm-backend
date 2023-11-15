@@ -1,16 +1,38 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, MinLength } from 'class-validator';
+import { Transform } from 'class-transformer';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty()
-  @IsEmail()
+  @IsNotEmpty()
+  @Transform(({ value }) => value.toLowerCase())
+  @IsEmail({}, { message: 'Invalid email address' })
   email: string;
 
   @ApiProperty()
-  @MinLength(1, { message: 'Name must be at least 1 character long' })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(1)
+  @MaxLength(25)
+  @Matches(/^[a-zA-ZА-ЩЬЮЯҐЄІЇа-щьюяґєії]*$/, {
+    message: 'Name must not contain special characters or digits',
+  })
   name: string;
 
   @ApiProperty()
-  @MinLength(1, { message: 'Surname must be at least 1 character long' })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(1)
+  @MaxLength(30)
+  @Matches(/^[a-zA-ZА-ЩЬЮЯҐЄІЇа-щьюяґєії]*$/, {
+    message: 'Surname must not contain special characters or digits',
+  })
   surname: string;
 }
