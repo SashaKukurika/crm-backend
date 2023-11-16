@@ -1,7 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
 import {
-  IsEmail,
   IsEnum,
   IsNumber,
   IsOptional,
@@ -20,7 +18,15 @@ import { CoursesTypeEnum } from '../../common/enums/courses-type.enum';
 import { User } from '../../users/entitys/user.entity';
 
 export class OrderUpdateDto {
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    pattern: '^[a-zA-ZА-ЩЬЮЯҐЄІЇа-щьюяґєії]*$',
+    description: 'Client name',
+    minLength: 1,
+    maxLength: 25,
+    required: false,
+    example: 'kokos',
+  })
   @IsOptional()
   @IsString()
   @MinLength(1)
@@ -30,88 +36,166 @@ export class OrderUpdateDto {
   })
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    pattern: '^[a-zA-ZА-ЩЬЮЯҐЄІЇа-щьюяґєії]*$',
+    description: 'Client surname',
+    minLength: 1,
+    maxLength: 25,
+    required: false,
+    example: 'kokosovich',
+  })
   @IsOptional()
   @IsString()
   @MinLength(1)
-  @MaxLength(30)
+  @MaxLength(25)
   @Matches(/^[a-zA-ZА-ЩЬЮЯҐЄІЇа-щьюяґєії]*$/, {
     message: 'Surname must not contain special characters or digits',
   })
   surname: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    pattern: '[w-.]+@([w-]+.)+[w-]{2,4}$',
+    description: 'Client email',
+    minLength: 1,
+    maxLength: 100,
+    uniqueItems: true,
+    required: false,
+    example: 'email@gmail.com',
+  })
   @IsOptional()
-  @Transform(({ value }) => value.toLowerCase())
-  @IsEmail({}, { message: 'Invalid email address' })
+  @MinLength(1)
+  @MaxLength(100)
+  @IsString()
+  @Matches(/[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/, {
+    message: 'Invalid email format',
+  })
   email: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    pattern: '^380\\d{9}$',
+    description: 'Client phone',
+    example: '380932922314',
+  })
   @IsOptional()
   @IsString()
-  @Matches(/^(\+?380\d{9})|(0\d{9})|(\d{9})$/, {
-    message:
-      'Invalid phone format. Example: 380932922314/+380932922314/0932922314',
+  @Matches(/^380\d{9}$/, {
+    message: 'Invalid phone format. Example: 380932922314',
   })
   phone: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Number,
+    required: false,
+    minimum: 16,
+    maximum: 90,
+    description: 'Client age',
+    example: 18,
+  })
   @IsOptional()
   @IsNumber()
   @Min(16)
   @Max(90)
   age: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    enum: Object.values(CoursesEnum),
+    description: 'Course name',
+    required: false,
+  })
   @IsOptional()
   @IsEnum(CoursesEnum)
   course: CoursesEnum;
 
-  @ApiProperty()
+  @ApiProperty({
+    enum: Object.values(CoursesFormatEnum),
+    description: 'Course format',
+    required: false,
+  })
   @IsOptional()
   @IsEnum(CoursesFormatEnum)
   course_format: CoursesFormatEnum;
 
-  @ApiProperty()
+  @ApiProperty({
+    enum: Object.values(CoursesTypeEnum),
+    description: 'Course type',
+    required: false,
+  })
   @IsOptional()
   @IsEnum(CoursesTypeEnum)
   course_type: CoursesTypeEnum;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Number,
+    required: false,
+    minimum: 1,
+    maximum: 1_000_000,
+    description: 'Course cost',
+    example: 30_000,
+  })
   @IsOptional()
   @IsNumber()
   @Min(1)
   @Max(1_000_000)
   sum: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Number,
+    required: false,
+    minimum: 1,
+    maximum: 1_000_000,
+    description: 'Course cost',
+    example: 30_000,
+  })
   @IsOptional()
   @IsNumber()
   @Min(1)
   @Max(1_000_000)
   alreadyPaid: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'UTM',
+  })
   @IsOptional()
   @IsString()
   utm: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'Message from client',
+    example: 'want start next mouth',
+  })
   @IsOptional()
   @IsString()
   msg: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    enum: Object.values(CoursesStatusEnum),
+    description: 'Status',
+    required: false,
+  })
   @IsOptional()
   @IsEnum(CoursesStatusEnum)
   status: CoursesStatusEnum;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'Group name',
+    example: 'first',
+  })
   @IsOptional()
   @IsString()
   group: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: () => User,
+  })
   @IsOptional()
   user: User;
 }

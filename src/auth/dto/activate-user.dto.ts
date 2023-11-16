@@ -8,7 +8,15 @@ import {
 } from 'class-validator';
 
 export class ActivateUserDto {
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    pattern: '(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})',
+    description: 'User password',
+    minLength: 8,
+    maxLength: 30,
+    required: true,
+    example: 'Pa$$w0rd!',
+  })
   @IsString()
   @IsNotEmpty()
   @MinLength(8)

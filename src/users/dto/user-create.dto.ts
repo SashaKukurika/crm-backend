@@ -1,7 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
 import {
-  IsEmail,
   IsNotEmpty,
   IsString,
   Matches,
@@ -10,13 +8,33 @@ import {
 } from 'class-validator';
 
 export class CreateUserDto {
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    pattern: '[w-.]+@([w-]+.)+[w-]{2,4}$',
+    description: 'User email',
+    minLength: 1,
+    maxLength: 254,
+    uniqueItems: true,
+    required: true,
+    example: 'email@gmail.com',
+  })
   @IsNotEmpty()
-  @Transform(({ value }) => value.toLowerCase())
-  @IsEmail({}, { message: 'Invalid email address' })
+  @MaxLength(254)
+  @MinLength(1)
+  @Matches(/[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/, {
+    message: 'Invalid email format',
+  })
   email: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    pattern: '^[a-zA-ZА-ЩЬЮЯҐЄІЇа-щьюяґєії]*$',
+    description: 'User name',
+    minLength: 1,
+    maxLength: 25,
+    required: true,
+    example: 'kokos',
+  })
   @IsString()
   @IsNotEmpty()
   @MinLength(1)
@@ -26,7 +44,15 @@ export class CreateUserDto {
   })
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    pattern: '^[a-zA-ZА-ЩЬЮЯҐЄІЇа-щьюяґєії]*$',
+    description: 'User surname',
+    minLength: 1,
+    maxLength: 30,
+    required: true,
+    example: 'kokosovich',
+  })
   @IsString()
   @IsNotEmpty()
   @MinLength(1)

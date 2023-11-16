@@ -5,7 +5,7 @@ import { Orders } from '../../orders/entitys/orders.entity';
 import { User } from '../../users/entitys/user.entity';
 
 export class PaginatedOrders {
-  @ApiProperty()
+  @ApiProperty() // todo swagger
   @IsNumber()
   totalCount: number;
 
