@@ -124,7 +124,7 @@ export class AuthService {
         },
         {
           secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
-          expiresIn: this.configService.get<string>(
+          expiresIn: this.configService.get<number>(
             'JWT_ACCESS_TOKEN_EXPIRATION',
           ),
         },
@@ -138,7 +138,7 @@ export class AuthService {
         },
         {
           secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
-          expiresIn: this.configService.get<string>(
+          expiresIn: this.configService.get<number>(
             'JWT_REFRESH_TOKEN_EXPIRATION',
           ),
         },
@@ -146,12 +146,12 @@ export class AuthService {
     ]);
     this.redis.setex(
       `${TokensTypeEnum.ACCESS}:${user.email}`,
-      this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRATION'),
+      this.configService.get<number>('JWT_ACCESS_TOKEN_EXPIRATION'),
       accessToken,
     );
     this.redis.setex(
       `${TokensTypeEnum.REFRESH}:${user.email}`,
-      this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRATION'),
+      this.configService.get<number>('JWT_REFRESH_TOKEN_EXPIRATION'),
       refreshToken,
     );
     return { accessToken, refreshToken };
@@ -174,7 +174,7 @@ export class AuthService {
       },
       {
         secret: this.configService.get<string>('JWT_ACTIVATE_TOKEN_SECRET'),
-        expiresIn: this.configService.get<string>(
+        expiresIn: this.configService.get<number>(
           'JWT_ACTIVATE_TOKEN_EXPIRATION',
         ),
       },
