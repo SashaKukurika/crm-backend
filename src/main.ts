@@ -27,7 +27,7 @@ async function bootstrap() {
   SwaggerModule.setup('crm/api', app, document);
 
   app.enableCors({
-    origin: process.env.ERONT_CORS_URL,
+    origin: process.env.FRONT_CORS_URL,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

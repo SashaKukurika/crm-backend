@@ -144,10 +144,14 @@ export class AuthService {
         },
       ),
     ]);
-    this.redis.setex(`${TokensTypeEnum.ACCESS}:${user.email}`, 60, accessToken);
+    this.redis.setex(
+      `${TokensTypeEnum.ACCESS}:${user.email}`,
+      this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRATION'),
+      accessToken,
+    );
     this.redis.setex(
       `${TokensTypeEnum.REFRESH}:${user.email}`,
-      60 * 2,
+      this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRATION'),
       refreshToken,
     );
     return { accessToken, refreshToken };

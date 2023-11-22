@@ -1,10 +1,13 @@
 ## Before start the project
 
-Install [Node](https://nodejs.org/en/blog/release/v18.12.0) on you computer.
-
-
 Install [IntelliJ IDEA](https://www.jetbrains.com/ru-ru/idea/download/?section=windows) on you computer
 
+Install [Node](https://nodejs.org/en/blog/release/v18.12.0) on you computer.
+
+Install [Redis](https://redis.io/docs/install/install-redis/) on you computer.
+
+Go to [MySQL](http://owu.linkpc.net/mysql) and click create, come up with a username and password. The password will 
+become yours MYSQL_PASSWORD and username MYSQL_USER / MYSQL_DATABASE in .env files.
 
 Go to IntelliJ IDEA > File > New > Project from Version Control > URL > 'paste url from GitHub'
 
