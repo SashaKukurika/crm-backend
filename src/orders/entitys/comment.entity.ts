@@ -49,6 +49,7 @@ export class Comment {
   @ManyToOne(() => Orders, (order) => order.comments)
   order: Orders;
 
+  @ApiProperty({ type: () => User })
   @ManyToOne(() => User, (user) => user.comments)
   user: User;
 }

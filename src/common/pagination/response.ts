@@ -1,22 +1,39 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber } from 'class-validator';
+import { IsArray, IsNumber } from 'class-validator';
 
 import { Orders } from '../../orders/entitys/orders.entity';
 import { User } from '../../users/entitys/user.entity';
 
 export class PaginatedOrders {
-  @ApiProperty() // todo swagger
+  @ApiProperty({
+    type: Number,
+    description: 'number of all orders',
+    example: 500,
+  })
   @IsNumber()
   totalCount: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Orders,
+    isArray: true,
+    description: 'orders for one page',
+  })
   orders: Orders[];
 }
 export class PaginatedUsers {
-  @ApiProperty()
+  @ApiProperty({
+    type: Number,
+    description: 'number of all users',
+    example: 34,
+  })
   @IsNumber()
   totalCount: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: User,
+    isArray: true,
+    description: 'users for one page',
+  })
+  @IsArray()
   users: User[];
 }

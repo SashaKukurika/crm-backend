@@ -190,12 +190,15 @@ export class Orders {
   @IsEnum(CoursesStatusEnum, { message: 'Invalid course status' })
   status: CoursesStatusEnum;
 
+  @ApiProperty({ type: () => Groups })
   @ManyToOne(() => Groups, (group) => group.orders)
   group: Groups;
 
+  @ApiProperty({ type: () => User })
   @ManyToOne(() => User, (user) => user.orders)
   user: User;
 
+  @ApiProperty({ type: () => [Comment] })
   @OneToMany(() => Comment, (comment) => comment.order)
   comments: Comment[];
 }

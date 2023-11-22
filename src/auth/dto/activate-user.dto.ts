@@ -21,7 +21,7 @@ export class ActivateUserDto {
   @IsNotEmpty()
   @MinLength(8)
   @MaxLength(30)
-  @Matches(/'(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})'/, {
+  @Matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/, {
     message:
       'Weak password. Use both upper and lower case letters, numbers, and special characters',
   })

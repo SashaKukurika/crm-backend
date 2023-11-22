@@ -13,10 +13,15 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
+    .addBearerAuth()
     .setTitle('CRM for online courses')
     .setDescription('The CRM API description')
+    .setContact(
+      'Sasha Kukurika',
+      'https://www.linkedin.com/in/sasha-kukurika-ab452618a/',
+      'kukurika.sasha@gmail.com',
+    )
     .setVersion('1.0')
-    .addTag('crm')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('crm/api', app, document);

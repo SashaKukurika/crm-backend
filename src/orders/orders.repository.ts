@@ -161,6 +161,7 @@ export class OrdersRepository extends Repository<Orders> {
       start_date,
       end_date,
       phone,
+      // todo change to id
       user,
       email,
     } = query;
