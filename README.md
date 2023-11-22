@@ -9,8 +9,19 @@ Install [Redis](https://redis.io/docs/install/install-redis/) on you computer.
 Go to [MySQL](http://owu.linkpc.net/mysql) and click create, come up with a username and password. The password will 
 become yours MYSQL_PASSWORD and username MYSQL_USER / MYSQL_DATABASE in .env files.
 
+Download [dumpt](https://drive.google.com/file/d/1_5elESLEi3Lb_QFgDoo2NNsiP-n5O0Ow/view) with the orders document
+
 Go to IntelliJ IDEA > File > New > Project from Version Control > URL > 'paste url from GitHub'
 
+Data Base connection: inside IntelliJ IDEA in the upper right corner, click on Database > + > Data Source > MySQL
+
+In the open window, fill in the fields:
+ - host = http://owu.linkpc.net
+ - port = 3306
+ - user = 'the name you entered'
+ - password = 'the password you entered'
+
+Then right mouse click on you database > SQL Scripts > Run SQL Scripts > 'choose dump file'
 ## Installation
 
 ```bash

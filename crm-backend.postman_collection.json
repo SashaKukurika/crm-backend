@@ -1,0 +1,1010 @@
+{
+	"info": {
+		"_postman_id": "7e01f923-1fa3-44c9-8291-750ef0bdd324",
+		"name": "crm-backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25797345"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonBody = JSON.parse(responseBody);\r",
+									"\r",
+									"pm.environment.set(\"accessToken\", jsonBody.accessToken);\r",
+									"pm.environment.set(\"refreshToken\", jsonBody.refreshToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"password\": \"admin\",\r\n    \"email\": \"admin@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/auth/login",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "refresh",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonBody = JSON.parse(responseBody);\r",
+									"\r",
+									"pm.environment.set(\"accessToken\", jsonBody.accessToken);\r",
+									"pm.environment.set(\"refreshToken\", jsonBody.refreshToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY5OTM1MjY4OSwiZXhwIjoxNjk5OTU3NDg5fQ.jRZo9n_aizNNy79Dpccj9l8IEhwjkUG8UNnqKdZuMT0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/auth/refresh",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"auth",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "activate user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"password\": \"Gydini13!!\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/auth/activate/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwicm9sZSI6Im1hbmFnZXIiLCJpYXQiOjE2OTkzNjE5NTgsImV4cCI6MTY5OTM2MjU1OH0.yVCICh39s7dClzffw2mGuRXYtLUo-Z-qOvxOnxgy17I",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"auth",
+								"activate",
+								"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwicm9sZSI6Im1hbmFnZXIiLCJpYXQiOjE2OTkzNjE5NTgsImV4cCI6MTY5OTM2MjU1OH0.yVCICh39s7dClzffw2mGuRXYtLUo-Z-qOvxOnxgy17I"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "me",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"password\": \"Gydini13!!\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/auth/me",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "users",
+			"item": [
+				{
+					"name": "users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/users",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "3",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "activateToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/users/5/activateToken",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"users",
+								"5",
+								"activateToken"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create admin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/users/create/admin",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"users",
+								"create",
+								"admin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"gydini2@gmail.com\",\r\n    \"name\": \"sasha\",\r\n    \"surname\": \"ggrr\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/users",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ban",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/users/2/ban",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"users",
+								"2",
+								"ban"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "unban",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/users/2/unban",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"users",
+								"2",
+								"unban"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "orders",
+			"item": [
+				{
+					"name": "orders",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API}}/orders?order=id",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"orders"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "sd",
+									"disabled": true
+								},
+								{
+									"key": "surname",
+									"value": "и",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "email",
+									"disabled": true
+								},
+								{
+									"key": "course",
+									"value": "FX",
+									"disabled": true
+								},
+								{
+									"key": "course_format",
+									"value": "online",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "InWork",
+									"disabled": true
+								},
+								{
+									"key": "group",
+									"value": "first",
+									"disabled": true
+								},
+								{
+									"key": "user",
+									"value": "admin",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "order",
+									"value": "id"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "excel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var template = `\r",
+									"<style type=\"text/css\">\r",
+									"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
+									"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
+									"    .tftable tr {background-color:#ffffff;}\r",
+									"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
+									"    .tftable tr:hover {background-color:#e0ffff;}\r",
+									"</style>\r",
+									"\r",
+									"<table class=\"tftable\" border=\"1\">\r",
+									"    <tr>\r",
+									"        <th>ID</th>\r",
+									"        <th>Name</th>\r",
+									"    </tr>\r",
+									"    \r",
+									"    <tr>\r",
+									"        <td>1</td>\r",
+									"        <td>Order 1</td>\r",
+									"    </tr>\r",
+									"    <tr>\r",
+									"        <td>2</td>\r",
+									"        <td>Order 2</td>\r",
+									"    </tr>\r",
+									"    <tr>\r",
+									"        <td>3</td>\r",
+									"        <td>Order 3</td>\r",
+									"    </tr>\r",
+									"</table>\r",
+									"`;\r",
+									"\r",
+									"function constructVisualizerPayload() {\r",
+									"    return {};\r",
+									"}\r",
+									"\r",
+									"pm.visualizer.set(template, constructVisualizerPayload());// Test to check if the response contains the expected headers\r",
+									"pm.test(\"Headers are present in the response\", function() {\r",
+									"    pm.expect(pm.response.headers.has(\"header1\")).to.be.true;\r",
+									"    pm.expect(pm.response.headers.has(\"header2\")).to.be.true;\r",
+									"    pm.expect(pm.response.headers.has(\"header3\")).to.be.true;\r",
+									"    pm.expect(pm.response.headers.has(\"header4\")).to.be.true;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API}}/orders/excel",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"orders",
+								"excel"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "sd",
+									"disabled": true
+								},
+								{
+									"key": "surname",
+									"value": "и",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "email",
+									"disabled": true
+								},
+								{
+									"key": "phone",
+									"value": "0",
+									"disabled": true
+								},
+								{
+									"key": "course",
+									"value": "FX",
+									"disabled": true
+								},
+								{
+									"key": "course_format",
+									"value": "online",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "InWork",
+									"disabled": true
+								},
+								{
+									"key": "group",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "orders",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"sasha\",\r\n    \"age\": 16,\r\n    \"group\": \"first\",\r\n    \"status\": \"In work\",\r\n    \"email\": \"GyDini5@gmail.com\",\r\n    \"user\": {\r\n        \"id\": 1\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/orders/2",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"orders",
+								"2"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "sd",
+									"disabled": true
+								},
+								{
+									"key": "surname",
+									"value": "и",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "email",
+									"disabled": true
+								},
+								{
+									"key": "phone",
+									"value": "0",
+									"disabled": true
+								},
+								{
+									"key": "course",
+									"value": "FX",
+									"disabled": true
+								},
+								{
+									"key": "course_format",
+									"value": "online",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "InWork",
+									"disabled": true
+								},
+								{
+									"key": "group",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "comments",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": 1,\r\n    \"text\": \"second\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/orders/3/comments",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"orders",
+								"3",
+								"comments"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "sd",
+									"disabled": true
+								},
+								{
+									"key": "surname",
+									"value": "и",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "email",
+									"disabled": true
+								},
+								{
+									"key": "phone",
+									"value": "0",
+									"disabled": true
+								},
+								{
+									"key": "course",
+									"value": "FX",
+									"disabled": true
+								},
+								{
+									"key": "course_format",
+									"value": "online",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "InWork",
+									"disabled": true
+								},
+								{
+									"key": "group",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "statistics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API}}/orders/statistic",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"orders",
+								"statistic"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "groups",
+			"item": [
+				{
+					"name": "groups",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API}}/groups",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"groups"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "sd",
+									"disabled": true
+								},
+								{
+									"key": "surname",
+									"value": "и",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "email",
+									"disabled": true
+								},
+								{
+									"key": "phone",
+									"value": "0",
+									"disabled": true
+								},
+								{
+									"key": "course",
+									"value": "FX",
+									"disabled": true
+								},
+								{
+									"key": "course_format",
+									"value": "online",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "InWork",
+									"disabled": true
+								},
+								{
+									"key": "group",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "groups",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"first\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/groups",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"groups"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
