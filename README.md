@@ -41,6 +41,9 @@ $ npm run start:dev
 ## Just step
 
 ```bash
+# to create admin go POST to this url, or open database > user > and write it manually
+$ http://localhost:5000/create/admin
+
 # to see swagger API
 $ http://localhost:5000/crm/api
 ```
