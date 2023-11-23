@@ -67,6 +67,17 @@ export class UsersService {
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
+    const finedUser = await this.usersRepository.findOneBy({
+      email: createUserDto.email,
+    });
+
+    if (finedUser) {
+      throw new HttpException(
+        `User with email=${createUserDto.email} already exist`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     const user = this.usersRepository.create({
       ...createUserDto,
       role: UserRole.MANAGER,
