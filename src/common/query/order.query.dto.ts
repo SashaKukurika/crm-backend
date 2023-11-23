@@ -130,9 +130,9 @@ export class OrderQueryDto {
 
   @ApiProperty({
     type: String,
-    description: 'name of user', // todo id not name on front and back
+    description: 'user id',
     required: false,
-    example: 'kokos',
+    example: '2',
   })
   @IsString()
   @IsOptional()
