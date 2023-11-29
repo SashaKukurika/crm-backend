@@ -22,6 +22,8 @@ In the open window, fill in the fields:
  - password = 'the password you entered'
 
 Then right mouse click on you database > SQL Scripts > Run SQL Scripts > 'choose dump file'
+
+Start your redis server with command in ubuntu - sudo service redis-server start
 ## Installation
 
 ```bash
