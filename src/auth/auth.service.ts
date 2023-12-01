@@ -68,7 +68,16 @@ export class AuthService {
   async refreshToken(token: string): Promise<JwtTokensInterface> {
     try {
       const { email } = await this.verifyToken(token, TokensTypeEnum.REFRESH);
-      await this.verifyTokenRedis(email, TokensTypeEnum.REFRESH);
+      const tokenFromRedis = await this.verifyTokenRedis(
+        email,
+        TokensTypeEnum.REFRESH,
+      );
+      if (token !== tokenFromRedis) {
+        throw new HttpException(
+          `The refresh token has already been utilized.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const user = await this.userRepository.findOneBy({ email });
       if (!user) {
         throw new HttpException(`User not exist`, HttpStatus.BAD_REQUEST);
@@ -229,12 +238,13 @@ export class AuthService {
       throw new UnauthorizedException(err, { description: 'Invalid token' });
     }
   }
-  async verifyTokenRedis(email: string, type: TokensTypeEnum): Promise<void> {
+  async verifyTokenRedis(email: string, type: TokensTypeEnum): Promise<string> {
     const token = await this.redis.get(`${type}:${email}`);
     if (!token) {
       throw new Error(
         `${type[0].toUpperCase() + type.slice(1)} token not found`,
       );
     }
+    return token;
   }
 }
