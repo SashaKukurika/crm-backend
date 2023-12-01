@@ -109,7 +109,10 @@ export class OrdersRepository extends Repository<Orders> {
       ? Object.assign(order, { ...orderUpdateDto, group, user: null })
       : Object.assign(order, { ...orderUpdateDto, group, user });
 
-    return await this.save(order);
+    const updatedOrder = await this.save(order);
+    delete updatedOrder.user.password;
+
+    return updatedOrder;
   }
 
   async addComment(
